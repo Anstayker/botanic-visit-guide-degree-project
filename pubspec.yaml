@@ -11,19 +11,19 @@ dependencies:
     sdk: flutter
 
   # Service Locator
-  get_it: ^8.0.3
+  get_it: ^9.2.0
   # Value equality
-  equatable: ^2.0.7
+  equatable: ^2.0.8
   # Functional programming utilities
   dartz: ^0.10.1
   # Local cache
-  shared_preferences: ^2.5.3
+  shared_preferences: ^2.5.4
   
 
 dev_dependencies:
   flutter_test:
     sdk: flutter
-  flutter_lints: ^5.0.0
+  flutter_lints: ^6.0.0
 
 flutter:
   uses-material-design: true
