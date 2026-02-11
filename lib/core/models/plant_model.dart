@@ -1,0 +1,123 @@
+import 'package:botanic_guide/core/entities/plant.dart';
+import 'package:hive/hive.dart';
+
+part 'plant_model.g.dart';
+
+@HiveType(typeId: 0)
+class PlantModel {
+  @HiveField(0)
+  final String id;
+
+  @HiveField(1)
+  final String name;
+
+  @HiveField(2)
+  final String scientificName;
+
+  @HiveField(3)
+  final String ilumination;
+
+  @HiveField(4)
+  final String watering;
+
+  @HiveField(5)
+  final String height;
+
+  @HiveField(6)
+  final String growthTime;
+
+  @HiveField(7)
+  final String minTemperature;
+
+  @HiveField(8)
+  final String maxTemperature;
+
+  @HiveField(9)
+  final String image;
+
+  @HiveField(10)
+  final String description;
+
+  @HiveField(11)
+  final int categoryId;
+
+  @HiveField(12)
+  final String shortDescription;
+
+  @HiveField(13)
+  final bool isDiscovered;
+  const PlantModel({
+    required this.id,
+    required this.name,
+    required this.scientificName,
+    required this.ilumination,
+    required this.watering,
+    required this.height,
+    required this.growthTime,
+    required this.minTemperature,
+    required this.maxTemperature,
+    required this.image,
+    required this.description,
+    //! TMP fields
+    required this.categoryId,
+    required this.shortDescription,
+    required this.isDiscovered,
+  });
+
+  factory PlantModel.fromJson(Map<String, dynamic> json) {
+    return PlantModel(
+      id: json['id'],
+      name: json['name'],
+      scientificName: json['scientific_name'],
+      ilumination: json['ilumination'],
+      watering: json['watering'],
+      height: json['height'],
+      growthTime: json['growth_time'],
+      minTemperature: json['min_temperature'],
+      maxTemperature: json['max_temperature'],
+      image: json['image'],
+      description: json['description'],
+      categoryId: json['category_id'],
+      shortDescription: json['short_description'],
+      isDiscovered: json['is_discovered'] ?? false,
+    );
+  }
+
+  Plant toEntity() {
+    return Plant(
+      id: id,
+      name: name,
+      scientificName: scientificName,
+      ilumination: ilumination,
+      watering: watering,
+      height: height,
+      growthTime: growthTime,
+      minTemperature: minTemperature,
+      maxTemperature: maxTemperature,
+      image: image,
+      description: description,
+      categoryId: categoryId,
+      shortDescription: shortDescription,
+      isDiscovered: isDiscovered,
+    );
+  }
+
+  factory PlantModel.fromEntity(Plant plant) {
+    return PlantModel(
+      id: plant.id,
+      name: plant.name,
+      scientificName: plant.scientificName,
+      ilumination: plant.ilumination,
+      watering: plant.watering,
+      height: plant.height,
+      growthTime: plant.growthTime,
+      minTemperature: plant.minTemperature,
+      maxTemperature: plant.maxTemperature,
+      image: plant.image,
+      description: plant.description,
+      categoryId: plant.categoryId,
+      shortDescription: plant.shortDescription,
+      isDiscovered: plant.isDiscovered,
+    );
+  }
+}

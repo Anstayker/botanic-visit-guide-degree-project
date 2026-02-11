@@ -1,5 +1,7 @@
+import 'package:botanic_guide/features/encyclopedia/domain/entities/plant_filter_params.dart';
 import 'package:dartz/dartz.dart';
 
+import '../../../../core/entities/plant.dart';
 import '../../../../core/errors/failures.dart';
 import '../../domain/entities/ency_plant.dart';
 import '../../domain/repositories/ency_repository.dart';
@@ -29,6 +31,21 @@ class EncyRepositoryImpl implements EncyRepository {
       return right(result);
     } on UnknownFailure {
       return left(UnknownFailure());
+    }
+  }
+
+  @override
+  Stream<Either<Failure, List<Plant>>> watchAllPlantsInfo(
+    PlantFilterParams plantFilterParams,
+  ) async* {
+    try {
+      await for (final plants in localDatasource.watchAllPlantsInfo(
+        plantFilterParams,
+      )) {
+        yield right(plants);
+      }
+    } on UnknownFailure {
+      yield left(UnknownFailure());
     }
   }
 }
