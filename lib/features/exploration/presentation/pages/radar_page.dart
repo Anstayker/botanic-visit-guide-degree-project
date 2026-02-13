@@ -11,7 +11,7 @@ class RadarPage extends StatelessWidget {
     final colorScheme = theme.colorScheme;
 
     return Scaffold(
-      backgroundColor: colorScheme.surface.withOpacity(0.95),
+      backgroundColor: colorScheme.surface.withValues(alpha: 0.95),
       body: SafeArea(
         child: Column(
           children: [
@@ -41,7 +41,7 @@ class RadarPage extends StatelessWidget {
                 child: ClipRRect(
                   borderRadius: BorderRadius.circular(28),
                   child: Container(
-                    color: colorScheme.surfaceTint.withOpacity(0.08),
+                    color: colorScheme.surfaceTint.withValues(alpha: 0.08),
                     child: const RadarView(),
                   ),
                 ),

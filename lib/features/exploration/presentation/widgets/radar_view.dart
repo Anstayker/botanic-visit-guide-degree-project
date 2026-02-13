@@ -83,7 +83,7 @@ class _RadarViewState extends State<RadarView>
               child: CustomPaint(
                 size: Size.square(size * 0.85),
                 painter: _RadarRingsPainter(
-                  ringColor: colorScheme.primary.withOpacity(0.35),
+                  ringColor: colorScheme.primary.withValues(alpha: 0.35),
                 ),
               ),
             ),
@@ -93,10 +93,10 @@ class _RadarViewState extends State<RadarView>
                 height: 64,
                 decoration: BoxDecoration(
                   shape: BoxShape.circle,
-                  color: colorScheme.primary.withOpacity(0.9),
+                  color: colorScheme.primary.withValues(alpha: 0.9),
                   boxShadow: [
                     BoxShadow(
-                      color: colorScheme.primary.withOpacity(0.4),
+                      color: colorScheme.primary.withValues(alpha: 0.4),
                       blurRadius: 18,
                       spreadRadius: 2,
                     ),
@@ -157,8 +157,8 @@ class _PingBadge extends StatelessWidget {
           height: 52,
           decoration: BoxDecoration(
             shape: BoxShape.circle,
-            color: color.withOpacity(0.2),
-            border: Border.all(color: color.withOpacity(0.7), width: 1.2),
+            color: color.withValues(alpha: 0.2),
+            border: Border.all(color: color.withValues(alpha: 0.7), width: 1.2),
           ),
           child: Icon(ping.icon, color: color, size: 26),
         ),

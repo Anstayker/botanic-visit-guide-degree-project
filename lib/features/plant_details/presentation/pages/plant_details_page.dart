@@ -38,7 +38,7 @@ class PlantDetailsPage extends StatelessWidget {
                 onPressed: () => Navigator.of(context).maybePop(),
                 icon: const Icon(Icons.arrow_back),
                 style: IconButton.styleFrom(
-                  backgroundColor: Colors.black.withOpacity(0.45),
+                  backgroundColor: Colors.black.withValues(alpha: 0.45),
                   foregroundColor: Colors.white,
                 ),
               ),
@@ -57,7 +57,7 @@ class PlantDetailsPage extends StatelessWidget {
                   ),
                   boxShadow: [
                     BoxShadow(
-                      color: Colors.black.withOpacity(0.12),
+                      color: Colors.black.withValues(alpha: 0.12),
                       blurRadius: 16,
                       offset: const Offset(0, -6),
                     ),
