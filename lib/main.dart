@@ -2,12 +2,14 @@ import 'package:flutter/material.dart';
 
 import 'config/routes/app_routes.dart';
 import 'config/theme/app_themes.dart';
+import 'core/data/datasources/plant_local_data_source.dart';
 import 'features/home/presentation/pages/home_page.dart';
 import 'injection_container.dart' as dependencies;
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
   await dependencies.init();
+  await dependencies.sl<PlantLocalDataSource>().initializeDataSource();
   runApp(const MainApp());
 }
 

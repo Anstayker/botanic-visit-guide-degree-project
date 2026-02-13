@@ -1,10 +1,10 @@
 import 'package:get_it/get_it.dart' show GetIt;
-import 'package:hive/hive.dart';
 import 'package:hive_flutter/hive_flutter.dart';
 import 'package:shared_preferences/shared_preferences.dart'
     show SharedPreferences;
 
-import 'core/models/plant_model.dart';
+import 'core/data/datasources/plant_local_data_source.dart';
+import 'core/data/models/plant_model.dart';
 import 'features/encyclopedia/data/datasources/ency_local_datasource.dart';
 import 'features/encyclopedia/data/repositories/ency_repository_impl.dart';
 import 'features/encyclopedia/domain/repositories/ency_repository.dart';
@@ -15,6 +15,11 @@ import 'features/encyclopedia/domain/usecases/ency_watch_all_plants.dart';
 final sl = GetIt.instance;
 
 Future<void> init() async {
+  //! Core
+  sl.registerLazySingleton<PlantLocalDataSource>(
+    () => PlantLocalDataSourceImpl(plantBox: sl<Box<PlantModel>>()),
+  );
+
   //! Feature - Encyclopedia
   // Data sources
   sl.registerLazySingleton<EncyLocalDatasource>(

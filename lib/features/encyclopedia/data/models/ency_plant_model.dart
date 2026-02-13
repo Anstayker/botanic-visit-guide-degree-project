@@ -1,4 +1,4 @@
-import '../../../../core/models/plant_model.dart';
+import '../../../../core/data/models/plant_model.dart';
 import '../../domain/entities/ency_plant.dart';
 
 class EncyPlantModel extends EncyPlant {

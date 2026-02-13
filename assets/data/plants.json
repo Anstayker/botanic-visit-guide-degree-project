@@ -1,0 +1,33 @@
+[
+    {
+        "id": "1",
+        "name": "Rose",
+        "scientific_name": "Rosa",
+        "ilumination": "Full Sun",
+        "watering": "Moderate",
+        "height": "1-2 feet",
+        "growth_time": "2-3 months",
+        "min_temperature": "15°C",
+        "max_temperature": "30°C",
+        "image": "assets/images/rose.jpg",
+        "description": "A beautiful flowering plant known for its fragrant blooms.",
+        "category_id": 1,
+        "short_description": "A fragrant flowering plant."
+    },
+    
+    {
+        "id": "2",
+        "name": "Sunflower",
+        "scientific_name": "Helianthus annuus",
+        "ilumination": "Full Sun",
+        "watering": "Low",
+        "height": "6-10 feet",
+        "growth_time": "3-4 months",
+        "min_temperature": "20°C",
+        "max_temperature": "30°C",
+        "image": "assets/images/sunflower.jpg",
+        "description": "A tall plant known for its large, bright yellow flowers that follow the sun.",
+        "category_id": 1,
+        "short_description": "A tall plant with bright yellow flowers."
+    }
+]

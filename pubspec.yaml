@@ -21,6 +21,9 @@ dependencies:
   # Local database
   hive: ^2.2.3
   hive_flutter: ^1.1.0
+  # Bloc
+  flutter_bloc: ^9.1.1
+  bloc: ^9.2.0
   
 
 dev_dependencies:
@@ -32,3 +35,7 @@ dev_dependencies:
 
 flutter:
   uses-material-design: true
+
+  assets:
+    - assets/images/
+    - assets/data/

@@ -2,7 +2,7 @@ import 'package:hive_flutter/hive_flutter.dart';
 
 import '../../../../core/entities/plant.dart';
 import '../../../../core/errors/exceptions.dart';
-import '../../../../core/models/plant_model.dart';
+import '../../../../core/data/models/plant_model.dart';
 import '../../domain/entities/ency_plant.dart';
 import '../../domain/entities/plant_filter_params.dart';
 
@@ -66,6 +66,9 @@ class EncyLocalDataSourceImpl implements EncyLocalDatasource {
             .map((model) => model.toEntity())
             .toList(growable: false);
       }
+
+      // Suggestion: Use final allPlants = plantBox.values
+      // to avoid multiple calls to plantBox.values and improve readability.
 
       yield applyFilters(plantBox.values.toList(growable: false));
 
