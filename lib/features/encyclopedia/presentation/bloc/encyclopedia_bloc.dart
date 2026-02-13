@@ -13,6 +13,7 @@ part 'encyclopedia_state.dart';
 class EncyclopediaBloc extends Bloc<EncyclopediaEvent, EncyclopediaState> {
   final EncyWatchAllPlants watchAllPlants;
   StreamSubscription? _plantsSubscription;
+  int _currentRequestId = 0;
 
   EncyclopediaBloc({required this.watchAllPlants})
     : super(EncyclopediaInitial()) {
@@ -27,25 +28,51 @@ class EncyclopediaBloc extends Bloc<EncyclopediaEvent, EncyclopediaState> {
     Emitter<EncyclopediaState> emit,
   ) async {
     emit(EncyclopediaLoading());
-    await _plantsSubscription?.cancel();
 
-    _plantsSubscription =
-        watchAllPlants(Params(filterParams: event.filterParams)).listen((
-          result,
-        ) {
+    // Incrementar el ID de la solicitud actual para invalidar la anterior
+    final requestId = ++_currentRequestId;
+
+    // Cancelar la suscripción anterior sin bloquear
+    _plantsSubscription?.cancel();
+
+    try {
+      final stream = watchAllPlants(Params(filterParams: event.filterParams));
+
+      _plantsSubscription = stream.listen(
+        (result) {
+          // Solo procesar si esta suscripción sigue siendo la actual
+          if (requestId != _currentRequestId) {
+            return;
+          }
+
           result.fold(
-            (failure) => add(_PlantsFailed(failure.message)),
-            (plants) => add(_PlantsUpdated(plants)),
+            (failure) {
+              add(_PlantsFailed(failure.message));
+            },
+            (plants) {
+              add(_PlantsUpdated(plants));
+            },
           );
-        });
+        },
+        onError: (error, stackTrace) {
+          if (requestId == _currentRequestId) {
+            add(_PlantsFailed(error.toString()));
+          }
+        },
+      );
+    } catch (e) {
+      emit(EncyclopediaError(message: 'Error: $e'));
+    }
   }
 
   Future<void> _onWatchPlantsStopped(
     WatchPlantsStopped event,
     Emitter<EncyclopediaState> emit,
   ) async {
-    await _plantsSubscription?.cancel();
+    // Cancelar sin bloquear
+    _plantsSubscription?.cancel();
     _plantsSubscription = null;
+    _currentRequestId++;
     emit(EncyclopediaInitial());
   }
 
@@ -59,7 +86,9 @@ class EncyclopediaBloc extends Bloc<EncyclopediaEvent, EncyclopediaState> {
 
   @override
   Future<void> close() async {
-    await _plantsSubscription?.cancel();
+    // Cancelar sin bloquear e incrementar el ID para invalidad cualquier evento pendiente
+    _plantsSubscription?.cancel();
+    _currentRequestId++;
     return super.close();
   }
 }

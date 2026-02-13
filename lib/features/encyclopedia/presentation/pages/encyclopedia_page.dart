@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 
 import 'package:flutter_bloc/flutter_bloc.dart';
 
+import '../../../../core/entities/plant_category.dart';
 import '../../../../injection_container.dart';
 import '../../domain/entities/plant_filter_params.dart';
 import '../../domain/usecases/ency_watch_all_plants.dart';
@@ -38,13 +39,10 @@ class FilterChipsWidget extends StatelessWidget {
   const FilterChipsWidget({super.key});
 
   final filterOptions = const [
-    'Árboles',
-    'Flores',
-    'Frutas',
-    'Insectos',
-    'Aves',
-    'Mamíferos',
-    'Reptiles',
+    PlantCategory.frutal,
+    PlantCategory.ornamental,
+    PlantCategory.medicinal,
+    PlantCategory.other,
   ];
 
   @override
@@ -52,7 +50,7 @@ class FilterChipsWidget extends StatelessWidget {
     return Wrap(
       children: filterOptions.map((filter) {
         return FilterChip(
-          label: Text(filter),
+          label: Text(filter.name),
           onSelected: (selected) {
             context.read<EncyclopediaBloc>().add(
               WatchPlantsRequested(

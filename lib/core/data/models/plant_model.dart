@@ -1,4 +1,5 @@
 import 'package:botanic_guide/core/entities/plant.dart';
+import 'package:botanic_guide/core/entities/plant_category.dart';
 import 'package:hive/hive.dart';
 
 part 'plant_model.g.dart';
@@ -77,7 +78,7 @@ class PlantModel {
       maxTemperature: json['max_temperature'],
       image: json['image'],
       description: json['description'],
-      categoryId: json['category_id'],
+      categoryId: PlantCategory.fromId(json['category_id']).id,
       shortDescription: json['short_description'],
       isDiscovered: json['is_discovered'] ?? false,
     );
@@ -96,7 +97,7 @@ class PlantModel {
       maxTemperature: maxTemperature,
       image: image,
       description: description,
-      categoryId: categoryId,
+      categoryId: PlantCategory.fromId(categoryId),
       shortDescription: shortDescription,
       isDiscovered: isDiscovered,
     );
@@ -115,7 +116,7 @@ class PlantModel {
       maxTemperature: plant.maxTemperature,
       image: plant.image,
       description: plant.description,
-      categoryId: plant.categoryId,
+      categoryId: plant.categoryId.id,
       shortDescription: plant.shortDescription,
       isDiscovered: plant.isDiscovered,
     );

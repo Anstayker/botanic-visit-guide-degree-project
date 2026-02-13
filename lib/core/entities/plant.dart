@@ -1,3 +1,4 @@
+import 'plant_category.dart';
 import 'package:equatable/equatable.dart' show Equatable;
 
 class Plant extends Equatable {
@@ -13,7 +14,7 @@ class Plant extends Equatable {
   final String image;
   final String description;
   //! TMP fields
-  final int categoryId;
+  final PlantCategory categoryId;
   final String shortDescription;
   final bool isDiscovered;
 

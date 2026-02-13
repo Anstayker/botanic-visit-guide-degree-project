@@ -1,7 +1,9 @@
 import 'package:equatable/equatable.dart';
 
+import '../../../../core/entities/plant_category.dart';
+
 class PlantFilterParams extends Equatable {
-  final String? categoryId;
+  final PlantCategory? categoryId;
   final bool? onlyDiscovered;
   final String? searchQuery;
 

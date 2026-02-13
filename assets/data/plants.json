@@ -29,5 +29,53 @@
         "description": "A tall plant known for its large, bright yellow flowers that follow the sun.",
         "category_id": 1,
         "short_description": "A tall plant with bright yellow flowers."
+    },
+
+    {
+        "id": "3",
+        "name": "Cactus",
+        "scientific_name": "Cactaceae",
+        "ilumination": "Full Sun",
+        "watering": "Low",
+        "height": "Varies",
+        "growth_time": "Varies",
+        "min_temperature": "10°C",
+        "max_temperature": "40°C",
+        "image": "assets/images/cactus.jpg",
+        "description": "A succulent plant adapted to arid environments, known for its spines.",
+        "category_id": 2,
+        "short_description": "A succulent plant with spines."
+    },
+
+    {
+        "id": "4",
+        "name": "Fern",
+        "scientific_name": "Pteridophyta",
+        "ilumination": "Partial Shade",
+        "watering": "High",
+        "height": "1-3 feet",
+        "growth_time": "2-3 months",
+        "min_temperature": "15°C",
+        "max_temperature": "25°C",
+        "image": "assets/images/fern.jpg",
+        "description": "A non-flowering plant with feathery leaves, often found in shaded areas.",
+        "category_id": 3,
+        "short_description": "A non-flowering plant with feathery leaves."
+    },
+
+    {
+        "id": "5",
+        "name": "Lavender",
+        "scientific_name": "Lavandula",
+        "ilumination": "Full Sun",
+        "watering": "Low",
+        "height": "1-3 feet",
+        "growth_time": "2-3 months",
+        "min_temperature": "10°C",
+        "max_temperature": "30°C",
+        "image": "assets/images/lavender.jpg",
+        "description": "A fragrant herb known for its purple flowers and calming scent.",
+        "category_id": 4,
+        "short_description": "A fragrant herb with purple flowers."
     }
 ]

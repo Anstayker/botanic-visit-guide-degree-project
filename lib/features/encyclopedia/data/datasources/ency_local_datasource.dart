@@ -35,12 +35,10 @@ class EncyLocalDataSourceImpl implements EncyLocalDatasource {
       List<Plant> applyFilters(List<PlantModel> items) {
         Iterable<PlantModel> filtered = items;
 
-        if (plantFilterParams.categoryId != null &&
-            plantFilterParams.categoryId!.isNotEmpty) {
-          final categoryId = int.tryParse(plantFilterParams.categoryId!);
-          if (categoryId != null) {
-            filtered = filtered.where((p) => p.categoryId == categoryId);
-          }
+        if (plantFilterParams.categoryId != null) {
+          filtered = filtered.where(
+            (p) => p.categoryId == plantFilterParams.categoryId!.id,
+          );
         }
 
         if (plantFilterParams.onlyDiscovered == true) {
@@ -57,14 +55,15 @@ class EncyLocalDataSourceImpl implements EncyLocalDatasource {
           );
         }
 
-        filtered = filtered.toList()
+        final filteredList = filtered.toList()
           ..sort(
             (a, b) => a.name.toLowerCase().compareTo(b.name.toLowerCase()),
           );
 
-        return filtered
+        final result = filteredList
             .map((model) => model.toEntity())
             .toList(growable: false);
+        return result;
       }
 
       // Suggestion: Use final allPlants = plantBox.values
