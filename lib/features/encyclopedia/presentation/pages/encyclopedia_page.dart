@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 
 import 'package:flutter_bloc/flutter_bloc.dart';
 
-import '../../../../core/entities/plant_category.dart';
 import '../../../../injection_container.dart';
 import '../../domain/entities/plant_filter_params.dart';
 import '../../domain/usecases/ency_watch_all_plants.dart';
@@ -20,86 +19,15 @@ class EncyclopediaPage extends StatelessWidget {
         ..add(WatchPlantsRequested(filterParams: PlantFilterParams.empty())),
       child: BlocProvider(
         create: (_) => UserProgressBloc(),
-        child: SliverToBoxAdapter(
-          child: Column(
-            children: const [
-              PlantFilterChips(),
-              FilterChipsWidget(),
-              UserProgressWidget(),
-              PlantGridWidget(),
-            ],
-          ),
+        child: Column(
+          children: const [
+            PlantFilterChips(),
+            EncyUserProgressCard(),
+            EncyFilterChipsWidget(),
+            EncyPlantGridWidget(),
+          ],
         ),
       ),
-    );
-  }
-}
-
-class FilterChipsWidget extends StatelessWidget {
-  const FilterChipsWidget({super.key});
-
-  final filterOptions = const [
-    PlantCategory.frutal,
-    PlantCategory.ornamental,
-    PlantCategory.medicinal,
-    PlantCategory.other,
-  ];
-
-  @override
-  Widget build(BuildContext context) {
-    return Wrap(
-      children: filterOptions.map((filter) {
-        return FilterChip(
-          label: Text(filter.name),
-          onSelected: (selected) {
-            context.read<EncyclopediaBloc>().add(
-              WatchPlantsRequested(
-                filterParams: PlantFilterParams(categoryId: filter),
-              ),
-            );
-          },
-        );
-      }).toList(),
-    );
-  }
-}
-
-class UserProgressWidget extends StatelessWidget {
-  const UserProgressWidget({super.key});
-
-  @override
-  Widget build(BuildContext context) {
-    return BlocBuilder<UserProgressBloc, UserProgressState>(
-      builder: (_, state) {
-        if (state is UserProgressLoaded) {
-          debugPrint('User progress loaded');
-        }
-        return SizedBox.shrink();
-      },
-    );
-  }
-}
-
-class PlantGridWidget extends StatelessWidget {
-  const PlantGridWidget({super.key});
-
-  @override
-  Widget build(BuildContext context) {
-    return BlocBuilder<EncyclopediaBloc, EncyclopediaState>(
-      builder: (context, state) {
-        if (state is EncyclopediaLoaded) {
-          return Text('data: ${state.plants.length} plants');
-        }
-        if (state is EncyclopediaLoading) {
-          return CircularProgressIndicator();
-        }
-        if (state is EncyclopediaError) {
-          return Text('Error: ${state.message}');
-        }
-        //! Error Widget
-
-        return Container();
-      },
     );
   }
 }

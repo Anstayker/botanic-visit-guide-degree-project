@@ -15,11 +15,11 @@ final class WatchUserProgressStopped extends UserProgressEvent {
   const WatchUserProgressStopped();
 }
 
-final class _UserProgressUpdated extends UserProgressEvent {
-  // final UserProgress progress;
+// final class _UserProgressUpdated extends UserProgressEvent {
+//   final UserProgress progress;
 
-  // const _UserProgressUpdated(this.progress);
+//   const _UserProgressUpdated(this.progress);
 
-  // @override
-  // List<Object> get props => [progress];
-}
+//   @override
+//   List<Object> get props => [progress];
+// }

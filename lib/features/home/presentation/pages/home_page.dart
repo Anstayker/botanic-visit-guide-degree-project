@@ -40,35 +40,45 @@ class HomePage extends StatelessWidget {
         child: const Icon(Icons.radar),
       ),
       body: CustomScrollView(
-        slivers: [
-          HomePageAppBar(context: context),
-          SliverToBoxAdapter(
-            child: Container(
-              height: 200,
-              margin: const EdgeInsets.all(16.0),
-              decoration: BoxDecoration(
-                color: Colors.grey[300],
-                borderRadius: BorderRadius.circular(12),
-              ),
-              child: const Center(
-                child: Text(
-                  'Carrusel Placeholder\n(Elementos Cuadrados)',
-                  textAlign: TextAlign.center,
-                  style: TextStyle(fontSize: 16, color: Colors.grey),
-                ),
-              ),
-            ),
-          ),
+        slivers: <Widget>[
+          SliverMainAxisGroup(
+            slivers: <Widget>[
+              HomePageAppBar(context: context),
+              //! Feature: Noticias
+              SliverToBoxAdapter(child: featuredSelection()),
 
-          const EncyclopediaPage(),
-          PlantGridSliver(
-            items: plantItems,
-            onItemTap: (item, index) {
-              Navigator.of(context).pushNamed(AppRoutes.plantDetails);
-            },
+              //! Feature Encyclopedia
+              SliverToBoxAdapter(child: const EncyclopediaPage()),
+
+              //! TMP: PlantGridSliver con items de ejemplo
+              PlantGridSliver(
+                items: plantItems,
+                onItemTap: (item, index) {
+                  Navigator.of(context).pushNamed(AppRoutes.plantDetails);
+                },
+              ),
+              TMPEncyclopedia(),
+            ],
           ),
-          TMPEncyclopedia(),
         ],
+      ),
+    );
+  }
+
+  Container featuredSelection() {
+    return Container(
+      height: 200,
+      margin: const EdgeInsets.all(16.0),
+      decoration: BoxDecoration(
+        color: Colors.grey[300],
+        borderRadius: BorderRadius.circular(12),
+      ),
+      child: const Center(
+        child: Text(
+          'Carrusel Placeholder\n(Elementos Cuadrados)',
+          textAlign: TextAlign.center,
+          style: TextStyle(fontSize: 16, color: Colors.grey),
+        ),
       ),
     );
   }
