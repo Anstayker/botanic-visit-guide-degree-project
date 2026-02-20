@@ -14,19 +14,22 @@ class EncyclopediaPage extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return BlocProvider(
-      create: (_) => EncyclopediaBloc(watchAllPlants: sl<EncyWatchAllPlants>())
-        ..add(WatchPlantsRequested(filterParams: PlantFilterParams.empty())),
-      child: BlocProvider(
-        create: (_) => UserProgressBloc(),
-        child: Column(
-          children: const [
-            PlantFilterChips(),
-            EncyUserProgressCard(),
-            EncyFilterChipsWidget(),
-            EncyPlantGridWidget(),
-          ],
+    return MultiBlocProvider(
+      providers: [
+        BlocProvider(
+          create: (_) => EncyclopediaBloc(
+            watchAllPlants: sl<EncyWatchAllPlants>(),
+          )..add(WatchPlantsRequested(filterParams: PlantFilterParams.empty())),
         ),
+        BlocProvider(create: (_) => UserProgressBloc()),
+      ],
+      child: const SliverMainAxisGroup(
+        slivers: [
+          SliverToBoxAdapter(child: PlantFilterChips()),
+          SliverToBoxAdapter(child: EncyUserProgressCard()),
+          SliverToBoxAdapter(child: EncyFilterChipsWidget()),
+          EncyPlantGridWidget(),
+        ],
       ),
     );
   }

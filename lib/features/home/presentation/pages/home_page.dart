@@ -48,7 +48,7 @@ class HomePage extends StatelessWidget {
               SliverToBoxAdapter(child: featuredSelection()),
 
               //! Feature Encyclopedia
-              SliverToBoxAdapter(child: const EncyclopediaPage()),
+              const EncyclopediaPage(),
 
               //! TMP: PlantGridSliver con items de ejemplo
               PlantGridSliver(
