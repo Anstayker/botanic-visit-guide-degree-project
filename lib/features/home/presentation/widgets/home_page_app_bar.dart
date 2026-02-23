@@ -12,10 +12,7 @@ class HomePageAppBar extends StatelessWidget {
     return SliverAppBar(
       floating: true,
       snap: true,
-      elevation: 0,
-      backgroundColor: Theme.of(context).scaffoldBackgroundColor,
-      surfaceTintColor: Colors.transparent,
-      centerTitle: true,
+      // backgroundColor: Theme.of(context).scaffoldBackgroundColor,
       title: Text(
         'App Name Logo',
         style: TextStyle(
