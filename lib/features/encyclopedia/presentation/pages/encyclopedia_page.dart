@@ -25,7 +25,6 @@ class EncyclopediaPage extends StatelessWidget {
       ],
       child: const SliverMainAxisGroup(
         slivers: [
-          SliverToBoxAdapter(child: PlantFilterChips()),
           SliverToBoxAdapter(child: EncyUserProgressCard()),
           SliverToBoxAdapter(child: EncyFilterChipsWidget()),
           EncyPlantGridWidget(),

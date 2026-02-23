@@ -121,7 +121,7 @@ class EncyclopediaGridItem extends StatelessWidget {
                   stops: const [0.6, 1.0],
                   colors: [
                     Colors.transparent,
-                    Colors.black.withValues(alpha: 0.7),
+                    Colors.black.withValues(alpha: 0.5),
                   ],
                 ),
               ),

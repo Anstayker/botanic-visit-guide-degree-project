@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 
+// TODO: Delete this widget, tmp widget for testing filter chips and progress card
+
 class PlantFilterChips extends StatelessWidget {
   const PlantFilterChips({super.key});
 
