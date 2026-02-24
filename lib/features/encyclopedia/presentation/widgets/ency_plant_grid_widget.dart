@@ -92,12 +92,12 @@ class EncyclopediaGridItem extends StatelessWidget {
         children: [
           //* Background image or placeholder
           Positioned.fill(
-            child: plant.isDiscovered
+            child: !plant.isDiscovered
                 ? Hero(
                     tag: 'plant_image_${plant.id}',
                     //TODO: Replace with actual plant image when available
                     child: Image.asset(
-                      'assets/images/plants/Pacay_1.png',
+                      'assets/images/plants/Azucena_blanca_2.jpg',
                       fit: BoxFit.cover,
                     ),
                   )
@@ -153,7 +153,8 @@ class EncyclopediaGridItem extends StatelessWidget {
             child: Material(
               color: Colors.transparent,
               child: InkWell(
-                onTap: plant.isDiscovered ? onTap : () => {},
+                // TODO: Change onTap behavior if plant is not discovered (e.g., show a tooltip or do nothing)
+                onTap: plant.isDiscovered ? onTap : () => {onTap()},
                 splashColor: Colors.white.withValues(alpha: 0.3),
                 highlightColor: Colors.white.withValues(alpha: 0.1),
               ),

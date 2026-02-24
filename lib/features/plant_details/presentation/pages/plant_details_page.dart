@@ -1,5 +1,13 @@
 import 'package:flutter/material.dart';
 
+import 'package:flutter_bloc/flutter_bloc.dart';
+
+import '../../../../core/entities/plant.dart';
+import '../../../../injection_container.dart';
+import '../../domain/usecases/get_plant_details_data.dart';
+import '../cubit/plant_details_cubit.dart';
+import '../widgets/plant_details_widgets.dart';
+
 class PlantDetailsPage extends StatelessWidget {
   const PlantDetailsPage({super.key, required this.plantId});
 
@@ -7,150 +15,111 @@ class PlantDetailsPage extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final theme = Theme.of(context);
-    final screenHeight = MediaQuery.of(context).size.height;
-    final imageHeight = screenHeight * 0.55;
+    return BlocProvider(
+      create: (_) =>
+          PlantDetailsCubit(getPlantDetailsData: sl<GetPlantDetailsData>())
+            ..fetchPlantDetailsData(plantId ?? ''),
+      child: PlantDetailsView(plantId: plantId ?? ''),
+    );
+  }
+}
 
+class PlantDetailsView extends StatelessWidget {
+  final String plantId;
+
+  const PlantDetailsView({super.key, required this.plantId});
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = Theme.of(context);
     return Scaffold(
-      body: Stack(
-        children: [
-          SizedBox(
-            height: imageHeight,
-            width: double.infinity,
-            child: Image.asset(
-              'assets/images/plant_placeholder.jpg',
-              fit: BoxFit.cover,
-              errorBuilder: (context, error, stackTrace) {
-                return Container(
-                  color: Colors.grey.shade300,
-                  alignment: Alignment.center,
-                  child: const Icon(
-                    Icons.local_florist,
-                    size: 72,
-                    color: Colors.white70,
-                  ),
+      body: CustomScrollView(
+        slivers: [
+          if (plantId.isNotEmpty) PlantHeroAppBar(plantId: plantId),
+          BlocBuilder<PlantDetailsCubit, PlantDetailsState>(
+            builder: (context, state) {
+              if (state is PlantDetailsError) {
+                return SliverFillRemaining(
+                  hasScrollBody: false,
+                  child: Center(child: Text('Error: ${state.message}')),
                 );
-              },
-            ),
-          ),
-          SafeArea(
-            child: Padding(
-              padding: const EdgeInsets.all(12.0),
-              child: IconButton(
-                onPressed: () => Navigator.of(context).maybePop(),
-                icon: const Icon(Icons.arrow_back),
-                style: IconButton.styleFrom(
-                  backgroundColor: Colors.black.withValues(alpha: 0.45),
-                  foregroundColor: Colors.white,
-                ),
-              ),
-            ),
-          ),
-          DraggableScrollableSheet(
-            initialChildSize: 0.42,
-            minChildSize: 0.32,
-            maxChildSize: 0.85,
-            builder: (context, scrollController) {
-              return Container(
-                decoration: BoxDecoration(
-                  color: theme.scaffoldBackgroundColor,
-                  borderRadius: const BorderRadius.vertical(
-                    top: Radius.circular(24),
-                  ),
-                  boxShadow: [
-                    BoxShadow(
-                      color: Colors.black.withValues(alpha: 0.12),
-                      blurRadius: 16,
-                      offset: const Offset(0, -6),
-                    ),
+              }
+
+              if (state is PlantDetailsLoaded) {
+                final plant = state.plantDetails;
+                return SliverMainAxisGroup(
+                  slivers: [
+                    if (plantId.isEmpty)
+                      PlantHeroAppBar(plantId: state.plantDetails.id),
+                    PlantDetailsBody(theme: theme, plant: plant),
                   ],
-                ),
-                child: ListView(
-                  controller: scrollController,
-                  padding: const EdgeInsets.fromLTRB(20, 12, 20, 32),
-                  children: [
-                    Center(
-                      child: Container(
-                        width: 48,
-                        height: 5,
-                        decoration: BoxDecoration(
-                          color: Colors.grey.shade400,
-                          borderRadius: BorderRadius.circular(999),
-                        ),
-                      ),
-                    ),
-                    const SizedBox(height: 16),
-                    Text(
-                      'Nombre de la planta',
-                      style: theme.textTheme.headlineSmall?.copyWith(
-                        fontWeight: FontWeight.w700,
-                      ),
-                    ),
-                    const SizedBox(height: 6),
-                    Text(
-                      'Nombre cientifico',
-                      style: theme.textTheme.titleMedium?.copyWith(
-                        color: Colors.grey.shade600,
-                        fontStyle: FontStyle.italic,
-                      ),
-                    ),
-                    const SizedBox(height: 18),
-                    Text(
-                      'Descripcion',
-                      style: theme.textTheme.titleLarge?.copyWith(
-                        fontWeight: FontWeight.w600,
-                      ),
-                    ),
-                    const SizedBox(height: 8),
-                    Text(
-                      'Aqui va la descripcion general de la planta. '
-                      'Puedes explicar su habitat, forma, color y datos relevantes.',
-                      style: theme.textTheme.bodyMedium?.copyWith(height: 1.4),
-                    ),
-                    const SizedBox(height: 18),
-                    Text(
-                      'Cuidados',
-                      style: theme.textTheme.titleLarge?.copyWith(
-                        fontWeight: FontWeight.w600,
-                      ),
-                    ),
-                    const SizedBox(height: 8),
-                    Text(
-                      'Luz: indirecta brillante\n'
-                      'Riego: moderado\n'
-                      'Sustrato: drenante',
-                      style: theme.textTheme.bodyMedium?.copyWith(height: 1.5),
-                    ),
-                    const SizedBox(height: 18),
-                    Text(
-                      'Curiosidades',
-                      style: theme.textTheme.titleLarge?.copyWith(
-                        fontWeight: FontWeight.w600,
-                      ),
-                    ),
-                    const SizedBox(height: 8),
-                    Text(
-                      'Incluye detalles curiosos o historicos sobre la planta.',
-                      style: theme.textTheme.bodyMedium?.copyWith(height: 1.4),
-                    ),
-                    const SizedBox(height: 18),
-                    Text(
-                      'Distribucion',
-                      style: theme.textTheme.titleLarge?.copyWith(
-                        fontWeight: FontWeight.w600,
-                      ),
-                    ),
-                    const SizedBox(height: 8),
-                    Text(
-                      'Zona geografica y regiones donde se encuentra naturalmente.',
-                      style: theme.textTheme.bodyMedium?.copyWith(height: 1.4),
-                    ),
-                  ],
-                ),
+                );
+              }
+
+              return const SliverFillRemaining(
+                hasScrollBody: false,
+                child: Center(child: CircularProgressIndicator()),
               );
             },
           ),
         ],
+      ),
+    );
+  }
+}
+
+class PlantDetailsBody extends StatelessWidget {
+  const PlantDetailsBody({super.key, required this.theme, required this.plant});
+
+  final ThemeData theme;
+  final Plant plant;
+
+  @override
+  Widget build(BuildContext context) {
+    return SliverToBoxAdapter(
+      child: Container(
+        transform: Matrix4.translationValues(0.0, -32.0, 0.0),
+        decoration: BoxDecoration(
+          color: theme.scaffoldBackgroundColor,
+          borderRadius: const BorderRadius.vertical(top: Radius.circular(32)),
+        ),
+        child: Padding(
+          padding: const EdgeInsets.fromLTRB(24, 32, 24, 32),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              PlantHeaderInfo(plant: plant),
+              const SizedBox(height: 24),
+              PlantBioDataGrid(theme: theme),
+              const SizedBox(height: 24),
+              Text(
+                'Descripción',
+                style: theme.textTheme.titleMedium?.copyWith(
+                  fontWeight: FontWeight.bold,
+                ),
+              ),
+              const SizedBox(height: 12),
+              Text(
+                plant.description,
+                style: theme.textTheme.bodyMedium?.copyWith(height: 1.4),
+              ),
+              const SizedBox(height: 24),
+              Text(
+                'Cuidados',
+                style: theme.textTheme.titleMedium?.copyWith(
+                  fontWeight: FontWeight.bold,
+                ),
+              ),
+              const SizedBox(height: 12),
+              Text(
+                'Luz: Dolore adipisicing enim tempor non id elit est proident anim magna sint officia sunt ea. Nisi duis sunt consectetur est consequat elit ipsum labore deserunt id esse veniam sit sint. Incididunt mollit quis consectetur voluptate.\n'
+                'Riego: Consequat deserunt eiusmod nisi aute. Voluptate do occaecat in fugiat tempor. Id voluptate do voluptate cillum deserunt. Cupidatat aliquip commodo dolore incididunt elit excepteur tempor anim commodo quis cupidatat. Tempor culpa Lorem id anim nulla duis commodo labore ut culpa.\n'
+                'Sustrato: Eiusmod anim excepteur anim enim nulla. Adipisicing mollit occaecat esse cupidatat quis ipsum irure veniam reprehenderit. Eiusmod esse nisi quis nostrud nisi quis dolor eu sit. Anim cillum sit deserunt nulla.',
+                style: theme.textTheme.bodyMedium?.copyWith(height: 1.5),
+              ),
+            ],
+          ),
+        ),
       ),
     );
   }

@@ -11,6 +11,10 @@ import 'features/encyclopedia/domain/repositories/ency_repository.dart';
 import 'features/encyclopedia/domain/usecases/ency_get_all_plants.dart';
 import 'features/encyclopedia/domain/usecases/ency_get_plants_by_category.dart';
 import 'features/encyclopedia/domain/usecases/ency_watch_all_plants.dart';
+import 'features/plant_details/data/datasources/plant_details_localdatasource.dart';
+import 'features/plant_details/data/repositories/plant_details_repository_impl.dart';
+import 'features/plant_details/domain/repositories/plant_details_repository.dart';
+import 'features/plant_details/domain/usecases/get_plant_details_data.dart';
 
 final sl = GetIt.instance;
 
@@ -42,6 +46,24 @@ Future<void> init() async {
 
   sl.registerLazySingleton<EncyWatchAllPlants>(
     () => EncyWatchAllPlants(repository: sl<EncyRepository>()),
+  );
+
+  //! Feature - Plant Details
+  // Data sources
+  sl.registerLazySingleton<PlantDetailsLocalDatasource>(
+    () => PlantDetailsLocalDatasourceImpl(plantBox: sl<Box<PlantModel>>()),
+  );
+
+  // Repositories
+  sl.registerLazySingleton<PlantDetailsRepository>(
+    () => PlantDetailsRepositoryImpl(
+      localDatasource: sl<PlantDetailsLocalDatasource>(),
+    ),
+  );
+
+  // Use cases
+  sl.registerLazySingleton<GetPlantDetailsData>(
+    () => GetPlantDetailsData(repository: sl<PlantDetailsRepository>()),
   );
 
   //! External
