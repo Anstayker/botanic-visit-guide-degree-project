@@ -30,6 +30,7 @@ class PlantModelAdapter extends TypeAdapter<PlantModel> {
       description: fields[10] as String,
       categoryId: fields[11] as int,
       shortDescription: fields[12] as String,
+      plantLocation: fields[14] as PlantLocation,
       isDiscovered: fields[13] as bool,
     );
   }
@@ -37,7 +38,7 @@ class PlantModelAdapter extends TypeAdapter<PlantModel> {
   @override
   void write(BinaryWriter writer, PlantModel obj) {
     writer
-      ..writeByte(14)
+      ..writeByte(15)
       ..writeByte(0)
       ..write(obj.id)
       ..writeByte(1)
@@ -65,7 +66,9 @@ class PlantModelAdapter extends TypeAdapter<PlantModel> {
       ..writeByte(12)
       ..write(obj.shortDescription)
       ..writeByte(13)
-      ..write(obj.isDiscovered);
+      ..write(obj.isDiscovered)
+      ..writeByte(14)
+      ..write(obj.plantLocation);
   }
 
   @override

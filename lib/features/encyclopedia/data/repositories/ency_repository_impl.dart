@@ -8,7 +8,7 @@ import '../../domain/repositories/ency_repository.dart';
 import '../datasources/ency_local_datasource.dart';
 
 class EncyRepositoryImpl implements EncyRepository {
-  EncyLocalDatasource localDatasource;
+  EncyLocalDataSource localDatasource;
 
   EncyRepositoryImpl({required this.localDatasource});
 

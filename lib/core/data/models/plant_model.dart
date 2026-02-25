@@ -1,6 +1,8 @@
-import 'package:botanic_guide/core/entities/plant.dart';
-import 'package:botanic_guide/core/entities/plant_category.dart';
 import 'package:hive/hive.dart';
+
+import '../../entities/plant.dart';
+import '../../entities/plant_category.dart';
+import '../../entities/plant_location.dart';
 
 part 'plant_model.g.dart';
 
@@ -47,6 +49,10 @@ class PlantModel {
 
   @HiveField(13)
   final bool isDiscovered;
+
+  @HiveField(14)
+  final PlantLocation plantLocation;
+
   const PlantModel({
     required this.id,
     required this.name,
@@ -59,9 +65,9 @@ class PlantModel {
     required this.maxTemperature,
     required this.image,
     required this.description,
-    //! TMP fields
     required this.categoryId,
     required this.shortDescription,
+    required this.plantLocation,
     required this.isDiscovered,
   });
 
@@ -78,6 +84,10 @@ class PlantModel {
       maxTemperature: json['max_temperature'],
       image: json['image'],
       description: json['description'],
+      plantLocation: PlantLocation(
+        latitude: json['latitude'] ?? 0,
+        longitude: json['longitude'] ?? 0,
+      ),
       categoryId: PlantCategory.fromId(json['category_id']).id,
       shortDescription: json['short_description'],
       isDiscovered: json['is_discovered'] ?? false,
@@ -92,6 +102,10 @@ class PlantModel {
       ilumination: ilumination,
       watering: watering,
       height: height,
+      location: PlantLocation(
+        latitude: plantLocation.latitude,
+        longitude: plantLocation.longitude,
+      ),
       growthTime: growthTime,
       minTemperature: minTemperature,
       maxTemperature: maxTemperature,
@@ -118,6 +132,7 @@ class PlantModel {
       description: plant.description,
       categoryId: plant.categoryId.id,
       shortDescription: plant.shortDescription,
+      plantLocation: plant.location,
       isDiscovered: plant.isDiscovered,
     );
   }

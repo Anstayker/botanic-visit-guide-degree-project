@@ -12,7 +12,9 @@
         "image": "assets/images/rose.jpg",
         "description": "A beautiful flowering plant known for its fragrant blooms.",
         "category_id": 1,
-        "short_description": "A fragrant flowering plant."
+        "short_description": "A fragrant flowering plant.",
+        "latitude": 0,
+        "longitude": 0
     },
     
     {
@@ -28,7 +30,9 @@
         "image": "assets/images/sunflower.jpg",
         "description": "A tall plant known for its large, bright yellow flowers that follow the sun.",
         "category_id": 1,
-        "short_description": "A tall plant with bright yellow flowers."
+        "short_description": "A tall plant with bright yellow flowers.",
+        "latitude": 0,
+        "longitude": 0
     },
 
     {
@@ -44,7 +48,9 @@
         "image": "assets/images/cactus.jpg",
         "description": "A succulent plant adapted to arid environments, known for its spines.",
         "category_id": 2,
-        "short_description": "A succulent plant with spines."
+        "short_description": "A succulent plant with spines.",
+        "latitude": 0,
+        "longitude": 0
     },
 
     {
@@ -60,7 +66,9 @@
         "image": "assets/images/fern.jpg",
         "description": "A non-flowering plant with feathery leaves, often found in shaded areas.",
         "category_id": 3,
-        "short_description": "A non-flowering plant with feathery leaves."
+        "short_description": "A non-flowering plant with feathery leaves.",
+        "latitude": 0,
+        "longitude": 0
     },
 
     {
@@ -76,6 +84,8 @@
         "image": "assets/images/lavender.jpg",
         "description": "A fragrant herb known for its purple flowers and calming scent.",
         "category_id": 4,
-        "short_description": "A fragrant herb with purple flowers."
+        "short_description": "A fragrant herb with purple flowers.",
+        "latitude": 0,
+        "longitude": 0
     }
 ]

@@ -1,22 +1,33 @@
-import 'plant_category.dart';
 import 'package:equatable/equatable.dart' show Equatable;
+
+import 'plant_category.dart';
+import 'plant_location.dart';
 
 class Plant extends Equatable {
   final String id;
   final String name;
   final String scientificName;
+
+  //* Plant requirments
   final String ilumination;
   final String watering;
-  final String height;
-  final String growthTime;
   final String minTemperature;
   final String maxTemperature;
+
+  // * Plant characteristics
   final String image;
   final String description;
-  //! TMP fields
-  final PlantCategory categoryId;
+  final String height;
+  final String growthTime;
   final String shortDescription;
+
+  // * Location
+  final PlantLocation location;
+
+  // * Gamification
+  final PlantCategory categoryId;
   final bool isDiscovered;
+  // rarity, difficutly, xp, discoveryDate
 
   const Plant({
     required this.id,
@@ -27,6 +38,7 @@ class Plant extends Equatable {
     required this.height,
     required this.growthTime,
     required this.minTemperature,
+    required this.location,
     required this.maxTemperature,
     required this.image,
     required this.description,

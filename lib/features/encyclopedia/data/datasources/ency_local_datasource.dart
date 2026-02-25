@@ -6,13 +6,13 @@ import '../../../../core/data/models/plant_model.dart';
 import '../../domain/entities/ency_plant.dart';
 import '../../domain/entities/plant_filter_params.dart';
 
-abstract class EncyLocalDatasource {
+abstract class EncyLocalDataSource {
   Future<List<EncyPlant>> getAllPlants();
   Future<List<EncyPlant>> getPlantsByCategory(int category);
   Stream<List<Plant>> watchAllPlantsInfo(PlantFilterParams plantFilterParams);
 }
 
-class EncyLocalDataSourceImpl implements EncyLocalDatasource {
+class EncyLocalDataSourceImpl implements EncyLocalDataSource {
   final Box<PlantModel> plantBox;
 
   EncyLocalDataSourceImpl({required this.plantBox});

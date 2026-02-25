@@ -24,7 +24,12 @@ dependencies:
   # Bloc
   flutter_bloc: ^9.1.1
   bloc: ^9.2.0
-  
+  # Geo-location
+  geolocator: ^14.0.2
+  # Compass
+  flutter_compass: ^0.8.1
+  # To merge Streams
+  rxdart: ^0.28.0
 
 dev_dependencies:
   flutter_test:
