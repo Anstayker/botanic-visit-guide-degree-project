@@ -5,7 +5,7 @@ import '../entities/exploration_plant.dart';
 
 abstract class ExplorationRepository {
   Stream<Either<Failure, List<ExplorationPlant>>> watchNearbyPlants();
-  //! Only in Cubit?
+  //! Method Only in Bloc?
   Future<Either<Failure, List<ExplorationPlant>>> triggerSonarPing();
   Future<Either<Failure, void>> unlockPlant(String plantId);
 }

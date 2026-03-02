@@ -85,8 +85,8 @@ class PlantModel {
       image: json['image'],
       description: json['description'],
       plantLocation: PlantLocation(
-        latitude: json['latitude'] ?? 0,
-        longitude: json['longitude'] ?? 0,
+        latitude: json['latitude'] ?? 0.0,
+        longitude: json['longitude'] ?? 0.0,
       ),
       categoryId: PlantCategory.fromId(json['category_id']).id,
       shortDescription: json['short_description'],

@@ -4,6 +4,7 @@ import 'package:shared_preferences/shared_preferences.dart'
     show SharedPreferences;
 
 import 'core/data/datasources/plant_local_data_source.dart';
+import 'core/data/models/plant_location_adapter.dart';
 import 'core/data/models/plant_model.dart';
 import 'core/services/location/compass_wrapper.dart';
 import 'core/services/location/geolocator_wrapper.dart';
@@ -17,6 +18,8 @@ import 'features/encyclopedia/domain/usecases/ency_watch_all_plants.dart';
 import 'features/exploration/data/datasources/exploration_local_datasource.dart';
 import 'features/exploration/data/repositories/exploration_repository_impl.dart';
 import 'features/exploration/domain/repositories/exploration_repository.dart';
+import 'features/exploration/domain/usecases/exploration_unlock_plant.dart';
+import 'features/exploration/domain/usecases/exploration_watch_nearby_plants.dart';
 import 'features/plant_details/data/datasources/plant_details_localdatasource.dart';
 import 'features/plant_details/data/repositories/plant_details_repository_impl.dart';
 import 'features/plant_details/domain/repositories/plant_details_repository.dart';
@@ -92,6 +95,14 @@ Future<void> init() async {
     ),
   );
 
+  // Use cases
+  sl.registerLazySingleton<ExplorationWatchNearbyPlants>(
+    () => ExplorationWatchNearbyPlants(repository: sl<ExplorationRepository>()),
+  );
+  sl.registerLazySingleton<ExplorationUnlockPlant>(
+    () => ExplorationUnlockPlant(repository: sl<ExplorationRepository>()),
+  );
+
   //! External
   final sharedPreferences = await SharedPreferences.getInstance();
   sl.registerLazySingleton<SharedPreferences>(() => sharedPreferences);
@@ -104,6 +115,7 @@ Future<void> _initHive() async {
   await Hive.initFlutter();
 
   // Registrar adapters (generados por hive_generator)
+  Hive.registerAdapter(PlantLocationAdapter());
   Hive.registerAdapter(PlantModelAdapter());
 
   // Abrir boxes
