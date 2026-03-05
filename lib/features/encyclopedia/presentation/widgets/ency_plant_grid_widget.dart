@@ -92,7 +92,7 @@ class EncyclopediaGridItem extends StatelessWidget {
         children: [
           //* Background image or placeholder
           Positioned.fill(
-            child: !plant.isDiscovered
+            child: plant.isDiscovered
                 ? Hero(
                     tag: 'plant_image_${plant.id}',
                     //TODO: Replace with actual plant image when available

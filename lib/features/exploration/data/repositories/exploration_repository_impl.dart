@@ -70,7 +70,6 @@ class ExplorationRepositoryImpl extends ExplorationRepository {
                   .where((plant) => plant.distance <= _maxRadarDistanceMeters)
                   .toList()
                 ..sort((a, b) => a.distance.compareTo(b.distance));
-
           return Right(nearbyPlants);
         });
       },
@@ -115,7 +114,7 @@ class ExplorationRepositoryImpl extends ExplorationRepository {
 
   @override
   Future<Either<Failure, void>> unlockPlant(String plantId) {
-    // TODO: implement unlockPlant
-    throw UnimplementedError();
+    localDataSource.unlockPlant(plantId);
+    return Future.value(const Right(null));
   }
 }

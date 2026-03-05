@@ -1,20 +1,10 @@
 import 'dart:math' as math;
 
 import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 
-class PlantPing {
-  const PlantPing({
-    required this.name,
-    required this.distanceMeters,
-    required this.angleDegrees,
-    required this.icon,
-  });
-
-  final String name;
-  final double distanceMeters;
-  final double angleDegrees;
-  final IconData icon;
-}
+import '../../domain/entities/exploration_plant.dart';
+import '../bloc/exploration_bloc.dart';
 
 class RadarView extends StatefulWidget {
   const RadarView({super.key});
@@ -25,42 +15,28 @@ class RadarView extends StatefulWidget {
 
 class _RadarViewState extends State<RadarView>
     with SingleTickerProviderStateMixin {
-  late final AnimationController _controller;
-
-  final List<PlantPing> _pings = const [
-    PlantPing(
-      name: 'Helecho',
-      distanceMeters: 28,
-      angleDegrees: 35,
-      icon: Icons.grass,
-    ),
-    PlantPing(
-      name: 'Orquidea',
-      distanceMeters: 62,
-      angleDegrees: 160,
-      icon: Icons.local_florist,
-    ),
-    PlantPing(
-      name: 'Cactus',
-      distanceMeters: 90,
-      angleDegrees: 280,
-      icon: Icons.spa,
-    ),
-  ];
+  late final AnimationController _sonarController;
+  static const double _maxRadarDistance = 100;
 
   @override
   void initState() {
     super.initState();
-    _controller = AnimationController(
+    _sonarController = AnimationController(
       vsync: this,
-      duration: const Duration(seconds: 2),
-    )..repeat(reverse: true);
+      duration: const Duration(milliseconds: 800),
+    );
   }
 
   @override
   void dispose() {
-    _controller.dispose();
+    _sonarController.dispose();
     super.dispose();
+  }
+
+  void _onSonarStateChanged(ExplorationState state) {
+    if (state.isSonarActive && !_sonarController.isAnimating) {
+      _sonarController.forward(from: 0.0);
+    }
   }
 
   @override
@@ -68,110 +44,208 @@ class _RadarViewState extends State<RadarView>
     final theme = Theme.of(context);
     final colorScheme = theme.colorScheme;
 
-    return LayoutBuilder(
-      builder: (context, constraints) {
-        final size = math.min(constraints.maxWidth, constraints.maxHeight);
-        final radius = size * 0.36;
-        final center = Offset(
-          constraints.maxWidth / 2,
-          constraints.maxHeight / 2,
-        );
-
-        return Stack(
-          children: [
-            Center(
-              child: CustomPaint(
-                size: Size.square(size * 0.85),
-                painter: _RadarRingsPainter(
-                  ringColor: colorScheme.primary.withValues(alpha: 0.35),
-                ),
-              ),
-            ),
-            Center(
-              child: Container(
-                width: 64,
-                height: 64,
-                decoration: BoxDecoration(
-                  shape: BoxShape.circle,
-                  color: colorScheme.primary.withValues(alpha: 0.9),
-                  boxShadow: [
-                    BoxShadow(
-                      color: colorScheme.primary.withValues(alpha: 0.4),
-                      blurRadius: 18,
-                      spreadRadius: 2,
-                    ),
-                  ],
-                ),
-                child: const Icon(
-                  Icons.navigation,
-                  color: Colors.white,
-                  size: 30,
-                ),
-              ),
-            ),
-            ..._pings.map((ping) {
-              final angle = ping.angleDegrees * math.pi / 180;
-              final normalizedDistance = (ping.distanceMeters / 100).clamp(
-                0.2,
-                1,
+    return BlocListener<ExplorationBloc, ExplorationState>(
+      listenWhen: (previous, current) =>
+          previous.isSonarActive != current.isSonarActive,
+      listener: (context, state) => _onSonarStateChanged(state),
+      child: BlocBuilder<ExplorationBloc, ExplorationState>(
+        builder: (context, state) {
+          return LayoutBuilder(
+            builder: (context, constraints) {
+              final size = math.min(
+                constraints.maxWidth,
+                constraints.maxHeight,
               );
-              final pingOffset = Offset(
-                center.dx + math.cos(angle) * radius * normalizedDistance,
-                center.dy + math.sin(angle) * radius * normalizedDistance,
+              final radarRadius = size * 1;
+              final center = Offset(
+                constraints.maxWidth / 2,
+                constraints.maxHeight / 2,
               );
 
-              return Positioned(
-                left: pingOffset.dx - 26,
-                top: pingOffset.dy - 26,
-                child: ScaleTransition(
-                  scale: Tween(begin: 0.92, end: 1.05).animate(
-                    CurvedAnimation(
-                      parent: _controller,
-                      curve: Curves.easeInOut,
+              return Stack(
+                children: [
+                  // Anillos del radar
+                  Center(
+                    child: CustomPaint(
+                      size: Size.square(size * 0.85),
+                      painter: _RadarRingsPainter(
+                        ringColor: colorScheme.primary.withValues(alpha: 0.35),
+                      ),
                     ),
                   ),
-                  child: _PingBadge(ping: ping, color: colorScheme.primary),
-                ),
+
+                  // Sonar (pulso expandible)
+                  if (state.isSonarActive)
+                    Center(
+                      child: CustomPaint(
+                        size: Size.square(size * 0.85),
+                        painter: _SonarPainter(
+                          progress: _sonarController.value,
+                          radarRadius: radarRadius,
+                          color: colorScheme.primary,
+                        ),
+                      ),
+                    ),
+
+                  // Icono del usuario (centro, rotando)
+                  Center(
+                    child: Transform.rotate(
+                      angle: (state.userPosition?.heading ?? 0) * math.pi / 180,
+                      child: Container(
+                        width: 64,
+                        height: 64,
+                        decoration: BoxDecoration(
+                          shape: BoxShape.circle,
+                          color: colorScheme.primary.withValues(alpha: 0.9),
+                          boxShadow: [
+                            BoxShadow(
+                              color: colorScheme.primary.withValues(alpha: 0.4),
+                              blurRadius: 18,
+                              spreadRadius: 2,
+                            ),
+                          ],
+                        ),
+                        child: const Icon(
+                          Icons.navigation,
+                          color: Colors.white,
+                          size: 30,
+                        ),
+                      ),
+                    ),
+                  ),
+
+                  // Plantas detectadas
+                  for (final plant in state.plants.where(
+                    (p) => p.isVisibleInRadar && p.distance > 0,
+                  ))
+                    _buildPlantMarker(
+                      context: context,
+                      plant: plant,
+                      center: center,
+                      radarRadius: radarRadius,
+                      colorScheme: colorScheme,
+                    ),
+                ],
               );
-            }),
-          ],
-        );
-      },
+            },
+          );
+        },
+      ),
+    );
+  }
+
+  Widget _buildPlantMarker({
+    required BuildContext context,
+    required ExplorationPlant plant,
+    required Offset center,
+    required double radarRadius,
+    required ColorScheme colorScheme,
+  }) {
+    final angle = plant.bearing * math.pi / 180;
+    final normalizedDistance = (plant.distance / _maxRadarDistance).clamp(
+      0.0,
+      1.0,
+    );
+    final markerOffset = Offset(
+      center.dx + math.cos(angle) * radarRadius * normalizedDistance,
+      center.dy + math.sin(angle) * radarRadius * normalizedDistance,
+    );
+
+    return Positioned(
+      left: markerOffset.dx - 26,
+      top: markerOffset.dy - 26,
+      child: _PlantMarker(plant: plant, color: colorScheme.primary),
     );
   }
 }
 
-class _PingBadge extends StatelessWidget {
-  const _PingBadge({required this.ping, required this.color});
+class _PlantMarker extends StatelessWidget {
+  const _PlantMarker({required this.plant, required this.color});
 
-  final PlantPing ping;
+  final ExplorationPlant plant;
   final Color color;
 
   @override
   Widget build(BuildContext context) {
-    return Column(
-      mainAxisSize: MainAxisSize.min,
-      children: [
-        Container(
-          width: 52,
-          height: 52,
-          decoration: BoxDecoration(
-            shape: BoxShape.circle,
-            color: color.withValues(alpha: 0.2),
-            border: Border.all(color: color.withValues(alpha: 0.7), width: 1.2),
+    return Tooltip(
+      message: '${plant.plant.name} (${plant.distance.toStringAsFixed(0)}m)',
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Container(
+            width: 52,
+            height: 52,
+            decoration: BoxDecoration(
+              shape: BoxShape.circle,
+              color: plant.plant.isDiscovered
+                  ? color.withValues(alpha: 0.3)
+                  : color.withValues(alpha: 0.2),
+              border: Border.all(
+                color: plant.plant.isDiscovered
+                    ? color.withValues(alpha: 0.9)
+                    : color.withValues(alpha: 0.7),
+                width: plant.plant.isDiscovered ? 2 : 1.2,
+              ),
+            ),
+            child: Icon(Icons.local_florist, color: color, size: 26),
           ),
-          child: Icon(ping.icon, color: color, size: 26),
-        ),
-        const SizedBox(height: 6),
-        Text(
-          '${ping.name} ${ping.distanceMeters.toStringAsFixed(0)}m',
-          style: Theme.of(context).textTheme.labelSmall?.copyWith(
-            color: Colors.white70,
-            fontWeight: FontWeight.w600,
+          const SizedBox(height: 6),
+          Text(
+            '${plant.plant.name}'
+            '\n${plant.distance.toStringAsFixed(0)}m',
+            textAlign: TextAlign.center,
+            style: Theme.of(context).textTheme.labelSmall?.copyWith(
+              color: plant.plant.isDiscovered ? Colors.white : Colors.white70,
+              fontWeight: FontWeight.w600,
+            ),
           ),
-        ),
-      ],
+        ],
+      ),
     );
+  }
+}
+
+class _SonarPainter extends CustomPainter {
+  _SonarPainter({
+    required this.progress,
+    required this.radarRadius,
+    required this.color,
+  });
+
+  final double progress;
+  final double radarRadius;
+  final Color color;
+
+  @override
+  void paint(Canvas canvas, Size size) {
+    final center = size.center(Offset.zero);
+
+    // Sonar expandible con desvanecimiento
+    final radius = radarRadius * progress;
+    final opacity = (1 - progress).clamp(0.0, 1.0);
+
+    final paint = Paint()
+      ..color = color.withValues(alpha: 0.6 * opacity)
+      ..style = PaintingStyle.stroke
+      ..strokeWidth = 2;
+
+    canvas.drawCircle(center, radius, paint);
+
+    // Círculo relleno más tenue para efecto de onda
+    if (progress < 0.5) {
+      final innerOpacity = (0.5 - progress) * opacity;
+      final innerPaint = Paint()
+        ..color = color.withValues(alpha: 0.1 * innerOpacity)
+        ..style = PaintingStyle.fill;
+      canvas.drawCircle(center, radius * 0.8, innerPaint);
+    }
+  }
+
+  @override
+  bool shouldRepaint(_SonarPainter oldDelegate) {
+    return oldDelegate.progress != progress ||
+        oldDelegate.radarRadius != radarRadius ||
+        oldDelegate.color != color;
   }
 }
 
@@ -188,9 +262,30 @@ class _RadarRingsPainter extends CustomPainter {
       ..style = PaintingStyle.stroke
       ..strokeWidth = 1;
 
-    for (var i = 1; i <= 3; i++) {
+    // Dibuja 4 anillos
+    for (var i = 1; i <= 4; i++) {
       canvas.drawCircle(center, size.width * 0.18 * i, paint);
     }
+
+    // Líneas de orientación (N-S y E-O)
+    final linePaint = Paint()
+      ..color = ringColor
+      ..style = PaintingStyle.stroke
+      ..strokeWidth = 0.5;
+
+    final maxRadius = size.width * 0.72;
+    // Línea vertical (eje N-S)
+    canvas.drawLine(
+      Offset(center.dx, center.dy - maxRadius),
+      Offset(center.dx, center.dy + maxRadius),
+      linePaint,
+    );
+    // Línea horizontal (eje E-O)
+    canvas.drawLine(
+      Offset(center.dx - maxRadius, center.dy),
+      Offset(center.dx + maxRadius, center.dy),
+      linePaint,
+    );
   }
 
   @override

@@ -5,6 +5,7 @@ import '../../domain/entities/exploration_plant.dart';
 
 abstract class ExplorationLocalDataSource {
   Stream<List<ExplorationPlant>> getExplorationData();
+  Future<void> unlockPlant(String plantId);
 }
 
 class ExplorationLocalDataSourceImpl extends ExplorationLocalDataSource {
@@ -32,5 +33,11 @@ class ExplorationLocalDataSourceImpl extends ExplorationLocalDataSource {
     await for (final _ in plantBox.watch()) {
       yield mapPlants();
     }
+  }
+
+  @override
+  Future<void> unlockPlant(String plantId) {
+    // TODO: implement unlockPlant
+    throw UnimplementedError();
   }
 }

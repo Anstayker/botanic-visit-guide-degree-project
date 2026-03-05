@@ -1,9 +1,9 @@
-import 'package:botanic_guide/features/encyclopedia/domain/entities/plant_filter_params.dart';
 import 'package:dartz/dartz.dart';
 
 import '../../../../core/entities/plant.dart';
 import '../../../../core/errors/failures.dart';
 import '../../domain/entities/ency_plant.dart';
+import '../../domain/entities/plant_filter_params.dart';
 import '../../domain/repositories/ency_repository.dart';
 import '../datasources/ency_local_datasource.dart';
 
