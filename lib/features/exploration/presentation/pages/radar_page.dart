@@ -43,63 +43,63 @@ class _RadarPageView extends StatelessWidget {
               final explorationPlant = state.nearbyPlantDetected!;
               final plant = explorationPlant.plant;
 
-              // showDialog(
-              //   context: context,
-              //   builder: (dialogContext) => AlertDialog(
-              //     icon: Icon(Icons.eco, color: colorScheme.primary, size: 48),
-              //     title: Text('¡Planta Detectada!'),
-              //     content: Column(
-              //       mainAxisSize: MainAxisSize.min,
-              //       crossAxisAlignment: CrossAxisAlignment.start,
-              //       children: [
-              //         Text(
-              //           plant.name,
-              //           style: theme.textTheme.titleLarge?.copyWith(
-              //             fontWeight: FontWeight.bold,
-              //             color: colorScheme.primary,
-              //           ),
-              //         ),
-              //         const SizedBox(height: 12),
-              //         _InfoRow(
-              //           icon: Icons.straighten,
-              //           label: 'Distancia',
-              //           value:
-              //               '${explorationPlant.distance.toStringAsFixed(1)}m',
-              //         ),
-              //         const SizedBox(height: 8),
-              //         _InfoRow(
-              //           icon: Icons.explore,
-              //           label: 'Dirección',
-              //           value: _bearingToDirection(explorationPlant.bearing),
-              //         ),
-              //         if (plant.scientificName.isNotEmpty) ...[
-              //           const SizedBox(height: 8),
-              //           _InfoRow(
-              //             icon: Icons.science,
-              //             label: 'Nombre científico',
-              //             value: plant.scientificName,
-              //           ),
-              //         ],
-              //       ],
-              //     ),
-              //     actions: [
-              //       TextButton(
-              //         onPressed: () => Navigator.of(dialogContext).pop(),
-              //         child: const Text('Cerrar'),
-              //       ),
-              //       FilledButton.icon(
-              //         onPressed: () {
-              //           Navigator.of(dialogContext).pop();
-              //           context.read<ExplorationBloc>().add(
-              //             ExplorationPlantUnlockRequested(plantId: plant.id),
-              //           );
-              //         },
-              //         icon: const Icon(Icons.lock_open),
-              //         label: const Text('Desbloquear'),
-              //       ),
-              //     ],
-              //   ),
-              // );
+              showDialog(
+                context: context,
+                builder: (dialogContext) => AlertDialog(
+                  icon: Icon(Icons.eco, color: colorScheme.primary, size: 48),
+                  title: Text('¡Planta Detectada!'),
+                  content: Column(
+                    mainAxisSize: MainAxisSize.min,
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        plant.name,
+                        style: theme.textTheme.titleLarge?.copyWith(
+                          fontWeight: FontWeight.bold,
+                          color: colorScheme.primary,
+                        ),
+                      ),
+                      const SizedBox(height: 12),
+                      _InfoRow(
+                        icon: Icons.straighten,
+                        label: 'Distancia',
+                        value:
+                            '${explorationPlant.distance.toStringAsFixed(1)}m',
+                      ),
+                      const SizedBox(height: 8),
+                      _InfoRow(
+                        icon: Icons.explore,
+                        label: 'Dirección',
+                        value: _bearingToDirection(explorationPlant.bearing),
+                      ),
+                      if (plant.scientificName.isNotEmpty) ...[
+                        const SizedBox(height: 8),
+                        _InfoRow(
+                          icon: Icons.science,
+                          label: 'Nombre científico',
+                          value: plant.scientificName,
+                        ),
+                      ],
+                    ],
+                  ),
+                  actions: [
+                    TextButton(
+                      onPressed: () => Navigator.of(dialogContext).pop(),
+                      child: const Text('Cerrar'),
+                    ),
+                    FilledButton.icon(
+                      onPressed: () {
+                        Navigator.of(dialogContext).pop();
+                        context.read<ExplorationBloc>().add(
+                          ExplorationPlantUnlockRequested(plantId: plant.id),
+                        );
+                      },
+                      icon: const Icon(Icons.lock_open),
+                      label: const Text('Desbloquear'),
+                    ),
+                  ],
+                ),
+              );
             },
           ),
           // Listener para errores

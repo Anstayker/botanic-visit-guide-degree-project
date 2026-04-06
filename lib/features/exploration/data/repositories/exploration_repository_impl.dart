@@ -10,7 +10,7 @@ import '../datasources/exploration_local_datasource.dart';
 
 class ExplorationRepositoryImpl extends ExplorationRepository {
   static const double _maxRadarDistanceMeters = 100;
-  static const double _radarFovDegrees = 120;
+  static const double _radarFovDegrees = 360;
 
   ExplorationLocalDataSource localDataSource;
   LocationService locationService;

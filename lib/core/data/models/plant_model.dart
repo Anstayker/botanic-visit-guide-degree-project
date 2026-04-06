@@ -99,7 +99,7 @@ class PlantModel {
       id: id,
       name: name,
       scientificName: scientificName,
-      ilumination: ilumination,
+      illumination: ilumination,
       watering: watering,
       height: height,
       location: PlantLocation(
@@ -122,7 +122,7 @@ class PlantModel {
       id: plant.id,
       name: plant.name,
       scientificName: plant.scientificName,
-      ilumination: plant.ilumination,
+      ilumination: plant.illumination,
       watering: plant.watering,
       height: plant.height,
       growthTime: plant.growthTime,

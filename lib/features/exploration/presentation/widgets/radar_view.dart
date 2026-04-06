@@ -106,7 +106,7 @@ class _RadarViewState extends State<RadarView>
                           ],
                         ),
                         child: const Icon(
-                          Icons.navigation,
+                          Icons.person,
                           color: Colors.white,
                           size: 30,
                         ),

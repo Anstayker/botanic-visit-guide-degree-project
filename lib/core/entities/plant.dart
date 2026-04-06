@@ -9,7 +9,7 @@ class Plant extends Equatable {
   final String scientificName;
 
   //* Plant requirments
-  final String ilumination;
+  final String illumination;
   final String watering;
   final String minTemperature;
   final String maxTemperature;
@@ -33,7 +33,7 @@ class Plant extends Equatable {
     required this.id,
     required this.name,
     required this.scientificName,
-    required this.ilumination,
+    required this.illumination,
     required this.watering,
     required this.height,
     required this.growthTime,
@@ -52,7 +52,7 @@ class Plant extends Equatable {
     id,
     name,
     scientificName,
-    ilumination,
+    illumination,
     watering,
     height,
     growthTime,
