@@ -12,8 +12,6 @@ import 'core/services/location/location_service.dart';
 import 'features/encyclopedia/data/datasources/ency_local_datasource.dart';
 import 'features/encyclopedia/data/repositories/ency_repository_impl.dart';
 import 'features/encyclopedia/domain/repositories/ency_repository.dart';
-import 'features/encyclopedia/domain/usecases/ency_get_all_plants.dart';
-import 'features/encyclopedia/domain/usecases/ency_get_plants_by_category.dart';
 import 'features/encyclopedia/domain/usecases/ency_watch_all_plants.dart';
 import 'features/exploration/data/datasources/exploration_local_datasource.dart';
 import 'features/exploration/data/repositories/exploration_repository_impl.dart';
@@ -51,14 +49,6 @@ Future<void> init() async {
   );
 
   // Use cases
-  sl.registerLazySingleton<EncyGetAllPlants>(
-    () => EncyGetAllPlants(repository: sl<EncyRepository>()),
-  );
-
-  sl.registerLazySingleton<EncyGetPlantsByCategory>(
-    () => EncyGetPlantsByCategory(repository: sl<EncyRepository>()),
-  );
-
   sl.registerLazySingleton<EncyWatchAllPlants>(
     () => EncyWatchAllPlants(repository: sl<EncyRepository>()),
   );
