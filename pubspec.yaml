@@ -30,6 +30,8 @@ dependencies:
   flutter_compass: ^0.8.1
   # To merge Streams
   rxdart: ^0.28.0
+  # Firebase
+  firebase_core: ^4.6.0
 
 dev_dependencies:
   flutter_test:

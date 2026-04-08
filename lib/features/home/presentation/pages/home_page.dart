@@ -73,12 +73,8 @@ class HomePage extends StatelessWidget {
         color: Colors.grey[300],
         borderRadius: BorderRadius.circular(12),
       ),
-      child: const Center(
-        child: Text(
-          'Carrusel Placeholder\n(Elementos Cuadrados)',
-          textAlign: TextAlign.center,
-          style: TextStyle(fontSize: 16, color: Colors.grey),
-        ),
+      child: Center(
+        child: Image.asset('assets/images/wallpaper1.jpg', fit: BoxFit.fill),
       ),
     );
   }

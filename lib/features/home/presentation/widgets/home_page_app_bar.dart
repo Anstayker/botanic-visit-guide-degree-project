@@ -14,7 +14,7 @@ class HomePageAppBar extends StatelessWidget {
       snap: true,
       // backgroundColor: Theme.of(context).scaffoldBackgroundColor,
       title: Text(
-        'App Name Logo',
+        'Guía Botánica',
         style: TextStyle(
           color: Theme.of(context).textTheme.titleLarge?.color,
           fontSize: 20,
@@ -27,12 +27,12 @@ class HomePageAppBar extends StatelessWidget {
           child: IconButton(
             onPressed: () {
               // TODO: Implementar navegación al perfil de usuario
-              ScaffoldMessenger.of(context).showSnackBar(
-                const SnackBar(content: Text('Perfil de usuario')),
-              );
+              ScaffoldMessenger.of(
+                context,
+              ).showSnackBar(const SnackBar(content: Text('Información')));
             },
             icon: Icon(
-              Icons.account_circle_outlined,
+              Icons.info_outline,
               color: Theme.of(context).iconTheme.color,
               size: 28,
             ),
@@ -41,7 +41,7 @@ class HomePageAppBar extends StatelessWidget {
               foregroundColor: Theme.of(context).iconTheme.color,
               padding: const EdgeInsets.all(8),
             ),
-            tooltip: 'Perfil de usuario',
+            tooltip: 'Información',
           ),
         ),
       ],

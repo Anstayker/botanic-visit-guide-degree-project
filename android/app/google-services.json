@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "329453133842",
+    "project_id": "botanic-guide",
+    "storage_bucket": "botanic-guide.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:329453133842:android:de37851347eb321813b8cb",
+        "android_client_info": {
+          "package_name": "com.example.botanic_guide"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyADI6IQmgEllMkb3OcZnIhw8oTpmt9WdJw"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

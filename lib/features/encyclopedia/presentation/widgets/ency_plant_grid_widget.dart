@@ -92,23 +92,15 @@ class EncyclopediaGridItem extends StatelessWidget {
         children: [
           //* Background image or placeholder
           Positioned.fill(
-            child: plant.isDiscovered
+            child: plant.image.isNotEmpty
                 ? Hero(
                     tag: 'plant_image_${plant.id}',
-                    //TODO: Replace with actual plant image when available
-                    child: Image.asset(
-                      'assets/images/plants/Azucena_blanca_2.jpg',
-                      fit: BoxFit.cover,
+                    child: _PlantGridAssetImage(
+                      imagePath: plant.image,
+                      isLocked: !plant.isDiscovered,
                     ),
                   )
-                : Container(
-                    color: Colors.black.withValues(alpha: 0.2),
-                    child: Icon(
-                      Icons.question_mark_rounded,
-                      size: 40,
-                      color: Colors.white.withValues(alpha: 0.3),
-                    ),
-                  ),
+                : const _PlantGridMissingImagePlaceholder(),
           ),
 
           //* Black gradient overlay for better text visibility
@@ -162,6 +154,67 @@ class EncyclopediaGridItem extends StatelessWidget {
           ),
         ],
       ),
+    );
+  }
+}
+
+class _PlantGridAssetImage extends StatelessWidget {
+  const _PlantGridAssetImage({required this.imagePath, required this.isLocked});
+
+  final String imagePath;
+  final bool isLocked;
+
+  @override
+  Widget build(BuildContext context) {
+    final imageWidget = Image.asset(
+      imagePath,
+      fit: BoxFit.cover,
+      errorBuilder: (context, error, stackTrace) {
+        return const _PlantGridMissingImagePlaceholder();
+      },
+    );
+
+    if (!isLocked) {
+      return imageWidget;
+    }
+
+    return ColorFiltered(
+      colorFilter: const ColorFilter.matrix(<double>[
+        0.49,
+        0.41,
+        0.10,
+        0,
+        10,
+        0.49,
+        0.41,
+        0.10,
+        0,
+        10,
+        0.49,
+        0.41,
+        0.10,
+        0,
+        10,
+        0,
+        0,
+        0,
+        1,
+        0,
+      ]),
+      child: imageWidget,
+    );
+  }
+}
+
+class _PlantGridMissingImagePlaceholder extends StatelessWidget {
+  const _PlantGridMissingImagePlaceholder();
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      color: Colors.grey.shade300,
+      alignment: Alignment.center,
+      child: const Icon(Icons.local_florist, size: 48, color: Colors.white70),
     );
   }
 }
