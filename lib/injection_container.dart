@@ -1,8 +1,11 @@
+import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:firebase_core/firebase_core.dart';
 import 'package:get_it/get_it.dart' show GetIt;
 import 'package:hive_flutter/hive_flutter.dart';
 import 'package:shared_preferences/shared_preferences.dart'
     show SharedPreferences;
 
+import 'firebase_options.dart';
 import 'core/data/datasources/plant_local_data_source.dart';
 import 'core/data/models/plant_location_adapter.dart';
 import 'core/data/models/plant_model.dart';
@@ -10,7 +13,9 @@ import 'core/services/location/compass_wrapper.dart';
 import 'core/services/location/geolocator_wrapper.dart';
 import 'core/services/location/location_service.dart';
 import 'features/encyclopedia/data/datasources/ency_local_datasource.dart';
+import 'features/encyclopedia/data/datasources/ency_remote_datasource.dart';
 import 'features/encyclopedia/data/repositories/ency_repository_impl.dart';
+import 'features/encyclopedia/data/services/ency_plants_sync_service.dart';
 import 'features/encyclopedia/domain/repositories/ency_repository.dart';
 import 'features/encyclopedia/domain/usecases/ency_watch_all_plants.dart';
 import 'features/exploration/data/datasources/exploration_local_datasource.dart';
@@ -42,10 +47,25 @@ Future<void> init() async {
   sl.registerLazySingleton<EncyLocalDataSource>(
     () => EncyLocalDataSourceImpl(plantBox: sl<Box<PlantModel>>()),
   );
+  sl.registerLazySingleton<EncyRemoteDataSource>(
+    () => EncyRemoteDataSourceImpl(firestore: sl<FirebaseFirestore>()),
+  );
+
+  // Sync services
+  sl.registerLazySingleton<EncyPlantsSyncService>(
+    () => EncyPlantsSyncServiceImpl(
+      remoteDataSource: sl<EncyRemoteDataSource>(),
+      plantBox: sl<Box<PlantModel>>(),
+      sharedPreferences: sl<SharedPreferences>(),
+    ),
+  );
 
   // Repositories
   sl.registerLazySingleton<EncyRepository>(
-    () => EncyRepositoryImpl(localDatasource: sl<EncyLocalDataSource>()),
+    () => EncyRepositoryImpl(
+      localDatasource: sl<EncyLocalDataSource>(),
+      syncService: sl<EncyPlantsSyncService>(),
+    ),
   );
 
   // Use cases
@@ -94,6 +114,14 @@ Future<void> init() async {
   );
 
   //! External
+  final firebaseApp = await Firebase.initializeApp(
+    options: DefaultFirebaseOptions.currentPlatform,
+  );
+  sl.registerLazySingleton<FirebaseApp>(() => firebaseApp);
+  sl.registerLazySingleton<FirebaseFirestore>(
+    () => FirebaseFirestore.instanceFor(app: firebaseApp),
+  );
+
   final sharedPreferences = await SharedPreferences.getInstance();
   sl.registerLazySingleton<SharedPreferences>(() => sharedPreferences);
 
