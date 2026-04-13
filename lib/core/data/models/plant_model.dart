@@ -136,4 +136,40 @@ class PlantModel {
       isDiscovered: plant.isDiscovered,
     );
   }
+
+  PlantModel copyWith({
+    String? id,
+    String? name,
+    String? scientificName,
+    String? ilumination,
+    String? watering,
+    String? height,
+    String? growthTime,
+    String? minTemperature,
+    String? maxTemperature,
+    String? image,
+    String? description,
+    int? categoryId,
+    String? shortDescription,
+    bool? isDiscovered,
+    PlantLocation? plantLocation,
+  }) {
+    return PlantModel(
+      id: id ?? this.id,
+      name: name ?? this.name,
+      scientificName: scientificName ?? this.scientificName,
+      ilumination: ilumination ?? this.ilumination,
+      watering: watering ?? this.watering,
+      height: height ?? this.height,
+      growthTime: growthTime ?? this.growthTime,
+      minTemperature: minTemperature ?? this.minTemperature,
+      maxTemperature: maxTemperature ?? this.maxTemperature,
+      image: image ?? this.image,
+      description: description ?? this.description,
+      categoryId: categoryId ?? this.categoryId,
+      shortDescription: shortDescription ?? this.shortDescription,
+      plantLocation: plantLocation ?? this.plantLocation,
+      isDiscovered: isDiscovered ?? this.isDiscovered,
+    );
+  }
 }

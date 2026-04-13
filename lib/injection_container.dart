@@ -5,7 +5,6 @@ import 'package:hive_flutter/hive_flutter.dart';
 import 'package:shared_preferences/shared_preferences.dart'
     show SharedPreferences;
 
-import 'firebase_options.dart';
 import 'core/data/datasources/plant_local_data_source.dart';
 import 'core/data/models/plant_location_adapter.dart';
 import 'core/data/models/plant_model.dart';
@@ -27,6 +26,11 @@ import 'features/plant_details/data/datasources/plant_details_localdatasource.da
 import 'features/plant_details/data/repositories/plant_details_repository_impl.dart';
 import 'features/plant_details/domain/repositories/plant_details_repository.dart';
 import 'features/plant_details/domain/usecases/get_plant_details_data.dart';
+import 'features/plant_progress/data/datasources/plant_progress_local_datasource.dart';
+import 'features/plant_progress/data/repositories/plant_progress_repository_impl.dart';
+import 'features/plant_progress/domain/repositories/plant_progress_repository.dart';
+import 'features/plant_progress/domain/usecases/discover_plant.dart';
+import 'firebase_options.dart';
 
 final sl = GetIt.instance;
 
@@ -111,6 +115,25 @@ Future<void> init() async {
   );
   sl.registerLazySingleton<ExplorationUnlockPlant>(
     () => ExplorationUnlockPlant(repository: sl<ExplorationRepository>()),
+  );
+
+  //! Plant Progress
+
+  // Data sources
+  sl.registerLazySingleton<PlantProgressLocalDataSource>(
+    () => PlantProgressLocalDatasource(plantBox: sl<Box<PlantModel>>()),
+  );
+
+  // Repositories
+  sl.registerLazySingleton<PlantProgressRepository>(
+    () => PlantProgressRepositoryImpl(
+      localDataSource: sl<PlantProgressLocalDataSource>(),
+    ),
+  );
+
+  // Use Cases
+  sl.registerLazySingleton<DiscoverPlant>(
+    () => DiscoverPlant(repository: sl<PlantProgressRepository>()),
   );
 
   //! External

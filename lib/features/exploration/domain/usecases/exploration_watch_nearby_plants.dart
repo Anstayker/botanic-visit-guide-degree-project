@@ -1,8 +1,8 @@
-import 'package:botanic_guide/features/exploration/domain/entities/exploration_plant.dart';
 import 'package:dartz/dartz.dart';
 
 import '../../../../core/errors/failures.dart';
 import '../../../../core/usecases/stream_usecase.dart';
+import '../entities/exploration_plant.dart';
 import '../repositories/exploration_repository.dart';
 
 class ExplorationWatchNearbyPlants
