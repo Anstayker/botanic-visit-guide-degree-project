@@ -6,9 +6,8 @@ import '../../../../core/entities/plant_location.dart';
 import '../../../../core/errors/exceptions.dart';
 
 abstract class EncyRemoteDataSource {
-  Future<List<PlantRemoteRecord>> fetchPlantUpdatesAfterVersion(
-    int lastVersion,
-  );
+  Future<int?> fetchLatestRemoteVersion();
+  Future<List<PlantModel>> fetchAllPlants();
 }
 
 class EncyRemoteDataSourceImpl implements EncyRemoteDataSource {
@@ -17,29 +16,31 @@ class EncyRemoteDataSourceImpl implements EncyRemoteDataSource {
   EncyRemoteDataSourceImpl({required this.firestore});
 
   @override
-  Future<List<PlantRemoteRecord>> fetchPlantUpdatesAfterVersion(
-    int lastVersion,
-  ) async {
+  Future<int?> fetchLatestRemoteVersion() async {
     try {
-      Query<Map<String, dynamic>> query = firestore
-          .collection('plants')
-          .orderBy('version')
-          .limit(500);
+      final snapshot = await firestore
+          .collection('metadata')
+          .doc('plants_catalog')
+          .get();
 
-      if (lastVersion > 0) {
-        query = query.where('version', isGreaterThan: lastVersion);
-      }
+      if (!snapshot.exists) return null;
 
-      final snapshot = await query.get();
+      return _readInt(snapshot.data() ?? <String, dynamic>{}, 'version');
+    } catch (_) {
+      throw UnknownException();
+    }
+  }
+
+  @override
+  Future<List<PlantModel>> fetchAllPlants() async {
+    try {
+      final snapshot = await firestore.collection('plants').get();
 
       return snapshot.docs
           .map((doc) {
             final data = doc.data();
-            final remoteVersion = _readInt(data, 'version');
 
-            if (remoteVersion == null) return null;
-
-            final model = PlantModel(
+            return PlantModel(
               id: _readString(data, 'id') ?? doc.id,
               name: _readString(data, 'name') ?? '',
               scientificName:
@@ -79,10 +80,7 @@ class EncyRemoteDataSourceImpl implements EncyRemoteDataSource {
                 longitude: _readDouble(data, 'longitude') ?? 0,
               ),
             );
-
-            return PlantRemoteRecord(model: model, version: remoteVersion);
           })
-          .whereType<PlantRemoteRecord>()
           .toList(growable: false);
     } catch (_) {
       throw UnknownException();
@@ -110,11 +108,4 @@ class EncyRemoteDataSourceImpl implements EncyRemoteDataSource {
     if (value is String) return double.tryParse(value);
     return null;
   }
-}
-
-class PlantRemoteRecord {
-  final PlantModel model;
-  final int version;
-
-  const PlantRemoteRecord({required this.model, required this.version});
 }

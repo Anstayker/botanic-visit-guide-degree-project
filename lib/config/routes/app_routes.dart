@@ -15,9 +15,16 @@ class AppRoutes {
       case plantDetails:
         if (settings.arguments is Map<String, dynamic>) {
           final args = settings.arguments as Map<String, dynamic>;
-          return _materialRoute(PlantDetailsPage(plantId: args['plantId']));
+          return _materialRoute(
+            PlantDetailsPage(
+              plantId: args['plantId'],
+              imageUrl: args['imageUrl'],
+            ),
+          );
         }
-        return _materialRoute(const PlantDetailsPage(plantId: '0'));
+        return _materialRoute(
+          const PlantDetailsPage(plantId: '0', imageUrl: ''),
+        );
       case radarPage:
         return _materialRoute(const RadarPage());
       default:

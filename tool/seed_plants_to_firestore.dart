@@ -13,11 +13,14 @@ Future<void> main() async {
   await Firebase.initializeApp(options: DefaultFirebaseOptions.currentPlatform);
 
   final firestore = FirebaseFirestore.instance;
+  final catalogVersion = 1;
 
   final rawJson = await rootBundle.loadString('assets/data/plants.json');
   final List<dynamic> plants = jsonDecode(rawJson) as List<dynamic>;
-
-  var writes = 0;
+  final plantCollection = firestore.collection('plants');
+  final existingSnapshot = await plantCollection.get();
+  final existingIds = existingSnapshot.docs.map((doc) => doc.id).toSet();
+  final seedIds = <String>{};
 
   for (final item in plants) {
     final map = Map<String, dynamic>.from(item as Map);
@@ -26,6 +29,8 @@ Future<void> main() async {
     if (id == null || id.isEmpty) {
       continue;
     }
+
+    seedIds.add(id);
 
     final payload = <String, dynamic>{
       'id': id,
@@ -43,20 +48,19 @@ Future<void> main() async {
       'short_description': map['short_description'],
       'latitude': map['latitude'],
       'longitude': map['longitude'],
-      // Seed baseline. Increment manually when publishing data changes.
-      'version': (map['version'] is num) ? (map['version'] as num).toInt() : 1,
       'updated_at': FieldValue.serverTimestamp(),
-      'is_active': true,
     };
 
-    await firestore
-        .collection('plants')
-        .doc(id)
-        .set(payload, SetOptions(merge: true));
-    writes++;
+    await plantCollection.doc(id).set(payload, SetOptions(merge: true));
   }
 
-  debugPrint('Firestore seeding completed. Documents upserted: $writes');
-  debugPrint('Collection: plants');
-  debugPrint('Project: ${Firebase.app().options.projectId}');
+  for (final obsoleteId in existingIds.difference(seedIds)) {
+    await plantCollection.doc(obsoleteId).delete();
+  }
+
+  await firestore.collection('metadata').doc('plants_catalog').set({
+    'version': catalogVersion,
+    'plant_count': seedIds.length,
+    'updated_at': FieldValue.serverTimestamp(),
+  }, SetOptions(merge: true));
 }

@@ -9,9 +9,14 @@ import '../cubit/plant_details_cubit.dart';
 import '../widgets/plant_details_widgets.dart';
 
 class PlantDetailsPage extends StatelessWidget {
-  const PlantDetailsPage({super.key, required this.plantId});
+  const PlantDetailsPage({
+    super.key,
+    required this.plantId,
+    required this.imageUrl,
+  });
 
   final String? plantId;
+  final String? imageUrl;
 
   @override
   Widget build(BuildContext context) {
@@ -19,15 +24,20 @@ class PlantDetailsPage extends StatelessWidget {
       create: (_) =>
           PlantDetailsCubit(getPlantDetailsData: sl<GetPlantDetailsData>())
             ..fetchPlantDetailsData(plantId ?? ''),
-      child: PlantDetailsView(plantId: plantId ?? ''),
+      child: PlantDetailsView(plantId: plantId ?? '', imageUrl: imageUrl ?? ''),
     );
   }
 }
 
 class PlantDetailsView extends StatelessWidget {
   final String plantId;
+  final String imageUrl;
 
-  const PlantDetailsView({super.key, required this.plantId});
+  const PlantDetailsView({
+    super.key,
+    required this.plantId,
+    required this.imageUrl,
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -35,7 +45,8 @@ class PlantDetailsView extends StatelessWidget {
     return Scaffold(
       body: CustomScrollView(
         slivers: [
-          if (plantId.isNotEmpty) PlantHeroAppBar(plantId: plantId),
+          if (plantId.isNotEmpty)
+            PlantHeroAppBar(plantId: plantId, image: imageUrl),
           BlocBuilder<PlantDetailsCubit, PlantDetailsState>(
             builder: (context, state) {
               if (state is PlantDetailsError) {
@@ -50,7 +61,10 @@ class PlantDetailsView extends StatelessWidget {
                 return SliverMainAxisGroup(
                   slivers: [
                     if (plantId.isEmpty)
-                      PlantHeroAppBar(plantId: state.plantDetails.id),
+                      PlantHeroAppBar(
+                        plantId: state.plantDetails.id,
+                        image: state.plantDetails.image,
+                      ),
                     PlantDetailsBody(theme: theme, plant: plant),
                   ],
                 );

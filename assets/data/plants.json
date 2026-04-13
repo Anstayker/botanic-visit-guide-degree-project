@@ -1,6 +1,6 @@
 [
     {
-        "id": "1",
+        "id": "1_Rose",
         "name": "Rose",
         "scientific_name": "Rosa",
         "ilumination": "Full Sun",
@@ -18,7 +18,7 @@
     },
     
     {
-        "id": "2",
+        "id": "2_Sunflower",
         "name": "Sunflower",
         "scientific_name": "Helianthus annuus",
         "ilumination": "Full Sun",
@@ -36,7 +36,7 @@
     },
 
     {
-        "id": "3",
+        "id": "3_Cactus",
         "name": "Cactus",
         "scientific_name": "Cactaceae",
         "ilumination": "Full Sun",
@@ -54,7 +54,7 @@
     },
 
     {
-        "id": "4",
+        "id": "4_Fern",
         "name": "Fern",
         "scientific_name": "Pteridophyta",
         "ilumination": "Partial Shade",
@@ -72,7 +72,7 @@
     },
 
     {
-        "id": "5",
+        "id": "5_Lavender",
         "name": "Lavender",
         "scientific_name": "Lavandula",
         "ilumination": "Full Sun",
@@ -87,5 +87,22 @@
         "short_description": "A fragrant herb with purple flowers.",
         "latitude": -17.3866230,
         "longitude": -66.1982000
+    },
+    {
+        "id": "6_AloeVera",
+        "name": "Aloe Vera",
+        "scientific_name": "Aloe barbadensis miller",
+        "ilumination": "Full Sun to Partial Shade",
+        "watering": "Low",
+        "height": "1-2 feet",
+        "growth_time": "2-3 months",
+        "min_temperature": "10°C",
+        "max_temperature": "30°C",
+        "image": "assets/images/plants/Nenufar_1.jpg",
+        "description": "A succulent plant known for its medicinal properties and gel-filled leaves.",
+        "category_id": 2,
+        "short_description": "A succulent plant with medicinal properties.",
+        "latitude": -17.3867000,
+        "longitude": -66.1983000
     }
 ]

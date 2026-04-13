@@ -2,9 +2,13 @@ import 'package:flutter/material.dart';
 
 class PlantHeroAppBar extends StatelessWidget {
   final String plantId;
-  // TODO: Need the image String argument
+  final String image;
 
-  const PlantHeroAppBar({required this.plantId, super.key});
+  const PlantHeroAppBar({
+    required this.plantId,
+    required this.image,
+    super.key,
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -27,8 +31,7 @@ class PlantHeroAppBar extends StatelessWidget {
         background: Hero(
           tag: 'plant_image_$plantId',
           child: Image.asset(
-            //TODO: Replace with actual plant image when available
-            'assets/images/plants/Azucena_blanca_2.jpg',
+            image,
             fit: BoxFit.cover,
             errorBuilder: (context, error, stackTrace) {
               return Container(

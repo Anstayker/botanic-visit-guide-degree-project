@@ -19,7 +19,7 @@ class EncyPlantGridWidget extends StatelessWidget {
             onPlantTap: (plant) {
               Navigator.of(context).pushNamed(
                 AppRoutes.plantDetails,
-                arguments: {'plantId': plant.id},
+                arguments: {'plantId': plant.id, 'imageUrl': plant.image},
               );
             },
           );

@@ -25,16 +25,17 @@ class EncyPlantsSyncServiceImpl implements EncyPlantsSyncService {
   Future<void> syncIfNeeded() async {
     final lastVersion = sharedPreferences.getInt(_lastVersionKey) ?? 0;
 
-    final records = await remoteDataSource.fetchPlantUpdatesAfterVersion(
-      lastVersion,
-    );
+    final latestRemoteVersion = await remoteDataSource
+        .fetchLatestRemoteVersion();
+    if (latestRemoteVersion == null || latestRemoteVersion == lastVersion) {
+      return;
+    }
 
-    if (records.isEmpty) return;
+    final remotePlants = await remoteDataSource.fetchAllPlants();
+    final remoteIds = remotePlants.map((plant) => plant.id).toSet();
+    final localIds = plantBox.keys.map((key) => key.toString()).toSet();
 
-    var maxVersion = lastVersion;
-
-    for (final record in records) {
-      final remotePlant = record.model;
+    for (final remotePlant in remotePlants) {
       final existingPlant = plantBox.get(remotePlant.id);
 
       final mergedPlant = PlantModel(
@@ -57,12 +58,12 @@ class EncyPlantsSyncServiceImpl implements EncyPlantsSyncService {
       );
 
       await plantBox.put(mergedPlant.id, mergedPlant);
-
-      if (record.version > maxVersion) {
-        maxVersion = record.version;
-      }
     }
 
-    await sharedPreferences.setInt(_lastVersionKey, maxVersion);
+    for (final localId in localIds.difference(remoteIds)) {
+      await plantBox.delete(localId);
+    }
+
+    await sharedPreferences.setInt(_lastVersionKey, latestRemoteVersion);
   }
 }
