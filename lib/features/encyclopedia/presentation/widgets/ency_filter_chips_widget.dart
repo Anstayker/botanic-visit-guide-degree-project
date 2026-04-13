@@ -13,6 +13,8 @@ class EncyFilterChipsWidget extends StatefulWidget {
 }
 
 class _EncyFilterChipsWidgetState extends State<EncyFilterChipsWidget> {
+  static const Color _terracotta = Color(0xFFC26E59);
+
   PlantCategory? selectedCategory;
 
   final filterOptions = const [
@@ -33,6 +35,12 @@ class _EncyFilterChipsWidgetState extends State<EncyFilterChipsWidget> {
           FilterChip(
             label: const Text('Todos'),
             selected: selectedCategory == null,
+            labelStyle: TextStyle(
+              color: selectedCategory == null ? Colors.white : _terracotta,
+              fontWeight: selectedCategory == null
+                  ? FontWeight.bold
+                  : FontWeight.normal,
+            ),
             onSelected: (_) {
               setState(() {
                 selectedCategory = null;
@@ -45,11 +53,17 @@ class _EncyFilterChipsWidgetState extends State<EncyFilterChipsWidget> {
           ),
           const SizedBox(width: 8),
           ...filterOptions.map((filter) {
+            final isSelected = selectedCategory == filter;
+
             return Padding(
               padding: const EdgeInsets.only(right: 8.0),
               child: FilterChip(
                 label: Text(filter.name),
-                selected: selectedCategory == filter,
+                selected: isSelected,
+                labelStyle: TextStyle(
+                  color: isSelected ? Colors.white : _terracotta,
+                  fontWeight: isSelected ? FontWeight.bold : FontWeight.normal,
+                ),
                 onSelected: (_) {
                   setState(() {
                     selectedCategory = filter;

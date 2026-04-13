@@ -10,39 +10,44 @@ class HomePage extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      floatingActionButton: FloatingActionButton(
-        onPressed: () {
-          Navigator.of(context).pushNamed(AppRoutes.radarPage);
-        },
-        child: const Icon(Icons.radar),
+      floatingActionButton: Column(
+        mainAxisSize: MainAxisSize.min,
+        mainAxisAlignment: MainAxisAlignment.end,
+        crossAxisAlignment: CrossAxisAlignment.end,
+        children: [
+          FloatingActionButton(
+            heroTag: 'home_camera_fab',
+            backgroundColor: Color.lerp(
+              Theme.of(context).floatingActionButtonTheme.backgroundColor,
+              Colors.white,
+              0.35,
+            ),
+            onPressed: () {
+              Navigator.of(context).pushNamed(AppRoutes.radarPage);
+            },
+            child: const Icon(Icons.camera_alt_outlined),
+          ),
+          const SizedBox(height: 16),
+          FloatingActionButton.extended(
+            heroTag: 'home_explore_fab',
+            onPressed: () {
+              Navigator.of(context).pushNamed(AppRoutes.radarPage);
+            },
+            icon: const Icon(Icons.radar),
+            label: const Text('Explorar'),
+          ),
+        ],
       ),
       body: CustomScrollView(
         slivers: <Widget>[
           SliverMainAxisGroup(
             slivers: <Widget>[
               HomePageAppBar(context: context),
-              //! Feature: Noticias
-              SliverToBoxAdapter(child: featuredSelection()),
-
               //! Feature Encyclopedia
               const EncyclopediaPage(),
             ],
           ),
         ],
-      ),
-    );
-  }
-
-  Container featuredSelection() {
-    return Container(
-      height: 200,
-      margin: const EdgeInsets.all(16.0),
-      decoration: BoxDecoration(
-        color: Colors.grey[300],
-        borderRadius: BorderRadius.circular(12),
-      ),
-      child: Center(
-        child: Image.asset('assets/images/wallpaper1.jpg', fit: BoxFit.fill),
       ),
     );
   }

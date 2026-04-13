@@ -26,7 +26,7 @@ class MainApp extends StatelessWidget {
     return MaterialApp(
       debugShowCheckedModeBanner: false,
       title: 'Botanical App',
-      theme: defaultTheme(),
+      theme: floraTheme(),
       onGenerateRoute: AppRoutes.onGenerateRoutes,
       home: HomePage(),
     );

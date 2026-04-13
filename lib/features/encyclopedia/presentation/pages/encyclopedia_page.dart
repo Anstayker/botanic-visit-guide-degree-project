@@ -33,6 +33,7 @@ class EncyclopediaPage extends StatelessWidget {
           SliverToBoxAdapter(child: EncyUserProgressCard()),
           SliverToBoxAdapter(child: EncyFilterChipsWidget()),
           EncyPlantGridWidget(),
+          SliverToBoxAdapter(child: SizedBox(height: 150)),
         ],
       ),
     );
