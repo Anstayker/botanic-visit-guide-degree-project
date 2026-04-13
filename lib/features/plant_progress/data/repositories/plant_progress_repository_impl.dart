@@ -21,6 +21,18 @@ class PlantProgressRepositoryImpl implements PlantProgressRepository {
   }
 
   @override
+  Future<Either<Failure, void>> setAllPlantsDiscovered(
+    bool isDiscovered,
+  ) async {
+    try {
+      await localDataSource.setAllPlantsDiscovered(isDiscovered);
+      return right(null);
+    } catch (e) {
+      return left(UnknownFailure());
+    }
+  }
+
+  @override
   Stream<Either<Failure, PlantDiscoveryProgress>> watchUserProgress() async* {
     try {
       await for (final progress in localDataSource.watchUserProgress()) {

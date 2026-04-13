@@ -5,6 +5,7 @@ import '../../domain/entities/plant_discovery_progress.dart';
 
 abstract class PlantProgressLocalDataSource {
   Future<void> discoverPlant(String plantId);
+  Future<void> setAllPlantsDiscovered(bool isDiscovered);
   Stream<PlantDiscoveryProgress> watchUserProgress();
 }
 
@@ -25,6 +26,28 @@ class PlantProgressLocalDatasource implements PlantProgressLocalDataSource {
       return plantBox.put(plantId, updatedPlant);
     } catch (e) {
       throw Exception('Failed to unlock plant: $e');
+    }
+  }
+
+  @override
+  Future<void> setAllPlantsDiscovered(bool isDiscovered) async {
+    try {
+      final updates = <dynamic, PlantModel>{};
+
+      for (final key in plantBox.keys) {
+        final plant = plantBox.get(key);
+        if (plant == null) {
+          continue;
+        }
+
+        updates[key] = plant.copyWith(isDiscovered: isDiscovered);
+      }
+
+      if (updates.isNotEmpty) {
+        await plantBox.putAll(updates);
+      }
+    } catch (e) {
+      throw Exception('Failed to update all discovery states: $e');
     }
   }
 
