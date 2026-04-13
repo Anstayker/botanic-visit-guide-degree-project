@@ -111,10 +111,4 @@ class ExplorationRepositoryImpl extends ExplorationRepository {
     // TODO: implement triggerSonarPing
     throw UnimplementedError();
   }
-
-  @override
-  Future<Either<Failure, void>> unlockPlant(String plantId) {
-    localDataSource.unlockPlant(plantId);
-    return Future.value(const Right(null));
-  }
 }

@@ -17,7 +17,7 @@ class PlantLocalDataSourceImpl implements PlantLocalDataSource {
 
   @override
   Future<void> initializeDataSource() async {
-    // if (plantBox.isNotEmpty) return;
+    if (plantBox.isNotEmpty) return;
 
     final jsonString = await rootBundle.loadString('assets/data/plants.json');
     final List<dynamic> data = json.decode(jsonString);

@@ -5,8 +5,9 @@ import 'package:equatable/equatable.dart';
 
 import '../../../../core/entities/user_position.dart';
 import '../../../../core/usecases/stream_usecase.dart';
+import '../../../plant_progress/domain/usecases/discover_plant.dart'
+    as plant_progress;
 import '../../domain/entities/exploration_plant.dart';
-import '../../domain/usecases/exploration_unlock_plant.dart';
 import '../../domain/usecases/exploration_watch_nearby_plants.dart';
 
 part 'exploration_event.dart';
@@ -14,17 +15,19 @@ part 'exploration_state.dart';
 
 class ExplorationBloc extends Bloc<ExplorationEvent, ExplorationState> {
   final ExplorationWatchNearbyPlants watchNearbyPlants;
-  final ExplorationUnlockPlant unlockPlant;
+  final plant_progress.DiscoverPlant discoverPlant;
   StreamSubscription? _plantSubscription;
 
-  ExplorationBloc({required this.watchNearbyPlants, required this.unlockPlant})
-    : super(
-        const ExplorationState(
-          status: ExplorationStatus.initial,
-          plants: [],
-          isSonarActive: false,
-        ),
-      ) {
+  ExplorationBloc({
+    required this.watchNearbyPlants,
+    required this.discoverPlant,
+  }) : super(
+         const ExplorationState(
+           status: ExplorationStatus.initial,
+           plants: [],
+           isSonarActive: false,
+         ),
+       ) {
     on<ExplorationWatchStarted>(_onStarted);
     on<_NearbyPlantsFailed>(_onNearbyPlantsFailed);
     on<_NearbyPlantsUpdated>(_onNearbyPlantsUpdated);
@@ -110,7 +113,21 @@ class ExplorationBloc extends Bloc<ExplorationEvent, ExplorationState> {
   Future<void> _onPlantUnlockRequested(
     ExplorationPlantUnlockRequested event,
     Emitter<ExplorationState> emit,
-  ) async {}
+  ) async {
+    final result = await discoverPlant(
+      plant_progress.Params(plantId: event.plantId),
+    );
+
+    result.fold(
+      (failure) => emit(
+        state.copyWith(
+          status: ExplorationStatus.error,
+          errorMessage: failure.message,
+        ),
+      ),
+      (_) => emit(state.copyWith(errorMessage: null)),
+    );
+  }
 
   @override
   Future<void> close() {

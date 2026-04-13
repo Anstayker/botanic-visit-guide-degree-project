@@ -2,8 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 
 import '../../../../injection_container.dart';
-import '../../domain/usecases/exploration_unlock_plant.dart';
 import '../../domain/usecases/exploration_watch_nearby_plants.dart';
+import '../../../plant_progress/domain/usecases/discover_plant.dart';
 import '../bloc/exploration_bloc.dart';
 import '../widgets/radar_view.dart';
 
@@ -15,7 +15,7 @@ class RadarPage extends StatelessWidget {
     return BlocProvider(
       create: (_) => ExplorationBloc(
         watchNearbyPlants: sl<ExplorationWatchNearbyPlants>(),
-        unlockPlant: sl<ExplorationUnlockPlant>(),
+        discoverPlant: sl<DiscoverPlant>(),
       )..add(ExplorationWatchStarted()),
       child: const _RadarPageView(),
     );
