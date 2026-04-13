@@ -145,8 +145,7 @@ class EncyclopediaGridItem extends StatelessWidget {
             child: Material(
               color: Colors.transparent,
               child: InkWell(
-                // TODO: Change onTap behavior if plant is not discovered (e.g., show a tooltip or do nothing)
-                onTap: plant.isDiscovered ? onTap : () => {onTap()},
+                onTap: plant.isDiscovered ? onTap : () => {},
                 splashColor: Colors.white.withValues(alpha: 0.3),
                 highlightColor: Colors.white.withValues(alpha: 0.1),
               ),

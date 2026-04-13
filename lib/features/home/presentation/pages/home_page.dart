@@ -9,29 +9,6 @@ class HomePage extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final plantItems = [
-      const PlantGridItem(name: 'Aloe', isUnlocked: true),
-      const PlantGridItem(name: 'Orquidea', isUnlocked: true),
-      const PlantGridItem(name: 'Lavanda', isUnlocked: false),
-      const PlantGridItem(name: 'Monstera', isUnlocked: true),
-      const PlantGridItem(name: '??', isUnlocked: false),
-      const PlantGridItem(name: 'Cactus', isUnlocked: true),
-      const PlantGridItem(name: '??', isUnlocked: false),
-      const PlantGridItem(name: '??', isUnlocked: false),
-      const PlantGridItem(name: '??', isUnlocked: false),
-      const PlantGridItem(name: '??', isUnlocked: false),
-      const PlantGridItem(name: '??', isUnlocked: false),
-      const PlantGridItem(name: '??', isUnlocked: false),
-      const PlantGridItem(name: '??', isUnlocked: false),
-      const PlantGridItem(name: '??', isUnlocked: false),
-      const PlantGridItem(name: '??', isUnlocked: false),
-      const PlantGridItem(name: '??', isUnlocked: false),
-      const PlantGridItem(name: '??', isUnlocked: false),
-      const PlantGridItem(name: '??', isUnlocked: false),
-      const PlantGridItem(name: '??', isUnlocked: false),
-      const PlantGridItem(name: '??', isUnlocked: false),
-    ];
-
     return Scaffold(
       floatingActionButton: FloatingActionButton(
         onPressed: () {
@@ -49,15 +26,6 @@ class HomePage extends StatelessWidget {
 
               //! Feature Encyclopedia
               const EncyclopediaPage(),
-
-              //! TMP: PlantGridSliver con items de ejemplo
-              PlantGridSliver(
-                items: plantItems,
-                onItemTap: (item, index) {
-                  Navigator.of(context).pushNamed(AppRoutes.plantDetails);
-                },
-              ),
-              TMPEncyclopedia(),
             ],
           ),
         ],
