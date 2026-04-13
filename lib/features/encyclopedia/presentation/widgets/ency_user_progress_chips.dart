@@ -10,9 +10,17 @@ class EncyUserProgressCard extends StatelessWidget {
   Widget build(BuildContext context) {
     return BlocBuilder<UserProgressBloc, UserProgressState>(
       builder: (_, state) {
-        if (state is UserProgressLoaded) {
-          debugPrint('User progress loaded');
-        }
+        final isLoading = state is UserProgressLoading;
+        final hasError = state is UserProgressError;
+        final loadedState = state is UserProgressLoaded ? state : null;
+
+        final identifiedPlants = loadedState?.identifiedPlants ?? 0;
+        final totalPlants = loadedState?.totalPlants ?? 0;
+        final progressValue = loadedState?.progressValue ?? 0;
+        final progressPercentage = loadedState?.progressPercentage ?? 0;
+        final levelNumber = loadedState?.levelNumber ?? 1;
+        final levelTitle = loadedState?.levelTitle ?? 'Explorador Inicial';
+
         return Container(
           margin: const EdgeInsets.all(16.0),
           padding: const EdgeInsets.all(16.0),
@@ -35,12 +43,20 @@ class EncyUserProgressCard extends StatelessWidget {
               const SizedBox(height: 8.0),
               Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                children: [_userLevel(), _plantsObtainedQuantity()],
+                children: [
+                  _userLevel(levelNumber, levelTitle),
+                  _plantsObtainedQuantity(identifiedPlants, totalPlants),
+                ],
               ),
               const SizedBox(height: 8.0),
-              _progressBar(context),
+              _progressBar(context, progressValue),
               const SizedBox(height: 8.0),
-              _completionPercentage(),
+              if (isLoading)
+                _helperText('Calculando progreso...')
+              else if (hasError)
+                _helperText('No se pudo cargar el progreso')
+              else
+                _completionPercentage(progressPercentage),
             ],
           ),
         );
@@ -48,29 +64,38 @@ class EncyUserProgressCard extends StatelessWidget {
     );
   }
 
-  Text _plantsObtainedQuantity() =>
-      Text('12/30', style: TextStyle(fontWeight: FontWeight.bold));
+  Text _plantsObtainedQuantity(int identifiedPlants, int totalPlants) => Text(
+    '$identifiedPlants/$totalPlants',
+    style: const TextStyle(fontWeight: FontWeight.bold),
+  );
 
-  LinearProgressIndicator _progressBar(BuildContext context) {
+  LinearProgressIndicator _progressBar(BuildContext context, double value) {
     return LinearProgressIndicator(
-      value: 0.4,
+      value: value,
       backgroundColor: Colors.grey[300],
       valueColor: AlwaysStoppedAnimation<Color>(Theme.of(context).primaryColor),
       color: Theme.of(context).primaryColor,
     );
   }
 
-  Text _completionPercentage() {
+  Text _completionPercentage(int progressPercentage) {
     return Text(
-      '40% completado',
+      '$progressPercentage% completado',
       style: const TextStyle(color: Colors.grey, fontSize: 12),
     );
   }
 
-  Text _userLevel() {
+  Text _userLevel(int levelNumber, String levelTitle) {
     return Text(
-      'Nivel 3: Descubridor Novato',
+      'Nivel $levelNumber: $levelTitle',
       style: TextStyle(color: Colors.grey[600], fontSize: 12),
+    );
+  }
+
+  Text _helperText(String message) {
+    return Text(
+      message,
+      style: const TextStyle(color: Colors.grey, fontSize: 12),
     );
   }
 

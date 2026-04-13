@@ -29,6 +29,7 @@ import 'features/plant_progress/data/datasources/plant_progress_local_datasource
 import 'features/plant_progress/data/repositories/plant_progress_repository_impl.dart';
 import 'features/plant_progress/domain/repositories/plant_progress_repository.dart';
 import 'features/plant_progress/domain/usecases/discover_plant.dart';
+import 'features/plant_progress/domain/usecases/watch_user_progress.dart';
 import 'firebase_options.dart';
 
 final sl = GetIt.instance;
@@ -130,6 +131,9 @@ Future<void> init() async {
   // Use Cases
   sl.registerLazySingleton<DiscoverPlant>(
     () => DiscoverPlant(repository: sl<PlantProgressRepository>()),
+  );
+  sl.registerLazySingleton<WatchUserProgress>(
+    () => WatchUserProgress(repository: sl<PlantProgressRepository>()),
   );
 
   //! External
