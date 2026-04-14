@@ -51,7 +51,7 @@ class EncyPlantsSyncServiceImpl implements EncyPlantsSyncService {
         image: remotePlant.image,
         description: remotePlant.description,
         categoryId: remotePlant.categoryId,
-        shortDescription: remotePlant.shortDescription,
+        funFact: remotePlant.funFact,
         plantLocation: remotePlant.plantLocation,
         // Preserve local-only progress data.
         isDiscovered: existingPlant?.isDiscovered ?? false,

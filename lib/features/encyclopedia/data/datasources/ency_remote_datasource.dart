@@ -70,10 +70,8 @@ class EncyRemoteDataSourceImpl implements EncyRemoteDataSource {
               categoryId: PlantCategory.fromId(
                 _readInt(data, 'category_id') ?? 1,
               ).id,
-              shortDescription:
-                  _readString(data, 'short_description') ??
-                  _readString(data, 'shortDescription') ??
-                  '',
+              funFact:
+                  _readString(data, 'fun_fact') ?? _readString(data, 'funFact'),
               isDiscovered: false,
               plantLocation: PlantLocation(
                 latitude: _readDouble(data, 'latitude') ?? 0,

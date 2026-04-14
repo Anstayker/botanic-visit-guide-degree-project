@@ -45,13 +45,16 @@ class PlantModel {
   final int categoryId;
 
   @HiveField(12)
-  final String shortDescription;
+  final String? shortDescription;
 
   @HiveField(13)
   final bool isDiscovered;
 
   @HiveField(14)
   final PlantLocation plantLocation;
+
+  @HiveField(15)
+  final String? funFact;
 
   const PlantModel({
     required this.id,
@@ -66,9 +69,10 @@ class PlantModel {
     required this.image,
     required this.description,
     required this.categoryId,
-    required this.shortDescription,
     required this.plantLocation,
     required this.isDiscovered,
+    this.shortDescription,
+    this.funFact,
   });
 
   factory PlantModel.fromJson(Map<String, dynamic> json) {
@@ -89,8 +93,8 @@ class PlantModel {
         longitude: json['longitude'] ?? 0.0,
       ),
       categoryId: PlantCategory.fromId(json['category_id']).id,
-      shortDescription: json['short_description'],
       isDiscovered: json['is_discovered'] ?? false,
+      funFact: json['fun_fact'],
     );
   }
 
@@ -112,8 +116,8 @@ class PlantModel {
       image: image,
       description: description,
       categoryId: PlantCategory.fromId(categoryId),
-      shortDescription: shortDescription,
       isDiscovered: isDiscovered,
+      funFact: funFact,
     );
   }
 
@@ -131,9 +135,9 @@ class PlantModel {
       image: plant.image,
       description: plant.description,
       categoryId: plant.categoryId.id,
-      shortDescription: plant.shortDescription,
       plantLocation: plant.location,
       isDiscovered: plant.isDiscovered,
+      funFact: plant.funFact,
     );
   }
 
@@ -153,6 +157,7 @@ class PlantModel {
     String? shortDescription,
     bool? isDiscovered,
     PlantLocation? plantLocation,
+    String? funFact,
   }) {
     return PlantModel(
       id: id ?? this.id,
@@ -170,6 +175,7 @@ class PlantModel {
       shortDescription: shortDescription ?? this.shortDescription,
       plantLocation: plantLocation ?? this.plantLocation,
       isDiscovered: isDiscovered ?? this.isDiscovered,
+      funFact: funFact ?? this.funFact,
     );
   }
 }

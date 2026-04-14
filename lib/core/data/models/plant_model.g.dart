@@ -29,16 +29,17 @@ class PlantModelAdapter extends TypeAdapter<PlantModel> {
       image: fields[9] as String,
       description: fields[10] as String,
       categoryId: fields[11] as int,
-      shortDescription: fields[12] as String,
       plantLocation: fields[14] as PlantLocation,
       isDiscovered: fields[13] as bool,
+      shortDescription: fields[12] as String?,
+      funFact: fields[15] as String?,
     );
   }
 
   @override
   void write(BinaryWriter writer, PlantModel obj) {
     writer
-      ..writeByte(15)
+      ..writeByte(16)
       ..writeByte(0)
       ..write(obj.id)
       ..writeByte(1)
@@ -68,7 +69,9 @@ class PlantModelAdapter extends TypeAdapter<PlantModel> {
       ..writeByte(13)
       ..write(obj.isDiscovered)
       ..writeByte(14)
-      ..write(obj.plantLocation);
+      ..write(obj.plantLocation)
+      ..writeByte(15)
+      ..write(obj.funFact);
   }
 
   @override
