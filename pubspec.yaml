@@ -28,6 +28,9 @@ dependencies:
   geolocator: ^14.0.2
   # Compass
   flutter_compass: ^0.8.1
+  # Maps
+  flutter_map: ^8.3.0
+  latlong2: ^0.9.1
   # To merge Streams
   rxdart: ^0.28.0
   # Firebase

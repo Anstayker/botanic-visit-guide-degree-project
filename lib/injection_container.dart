@@ -18,9 +18,19 @@ import 'features/encyclopedia/data/services/ency_plants_sync_service.dart';
 import 'features/encyclopedia/domain/repositories/ency_repository.dart';
 import 'features/encyclopedia/domain/usecases/ency_watch_all_plants.dart';
 import 'features/exploration/data/datasources/exploration_local_datasource.dart';
+import 'features/exploration/data/datasources/exploration_map_local_data_source.dart';
+import 'features/exploration/data/datasources/radar_preferences_local_data_source.dart';
 import 'features/exploration/data/repositories/exploration_repository_impl.dart';
+import 'features/exploration/data/repositories/exploration_map_repository_impl.dart';
+import 'features/exploration/data/repositories/radar_preferences_repository_impl.dart';
 import 'features/exploration/domain/repositories/exploration_repository.dart';
+import 'features/exploration/domain/repositories/exploration_map_repository.dart';
+import 'features/exploration/domain/repositories/radar_preferences_repository.dart';
 import 'features/exploration/domain/usecases/exploration_watch_nearby_plants.dart';
+import 'features/exploration/domain/usecases/get_map_tile_cache_max_size_bytes.dart';
+import 'features/exploration/domain/usecases/get_exploration_map_regions.dart';
+import 'features/exploration/domain/usecases/get_radar_rotation_enabled.dart';
+import 'features/exploration/domain/usecases/set_radar_rotation_enabled.dart';
 import 'features/plant_details/data/datasources/plant_details_localdatasource.dart';
 import 'features/plant_details/data/repositories/plant_details_repository_impl.dart';
 import 'features/plant_details/domain/repositories/plant_details_repository.dart';
@@ -101,6 +111,14 @@ Future<void> init() async {
   sl.registerLazySingleton<ExplorationLocalDataSource>(
     () => ExplorationLocalDataSourceImpl(plantBox: sl<Box<PlantModel>>()),
   );
+  sl.registerLazySingleton<ExplorationMapLocalDataSource>(
+    () => ExplorationMapLocalDataSourceImpl(plantBox: sl<Box<PlantModel>>()),
+  );
+  sl.registerLazySingleton<RadarPreferencesLocalDataSource>(
+    () => RadarPreferencesLocalDataSourceImpl(
+      sharedPreferences: sl<SharedPreferences>(),
+    ),
+  );
 
   // Repositories
   sl.registerLazySingleton<ExplorationRepository>(
@@ -109,10 +127,34 @@ Future<void> init() async {
       locationService: sl<LocationService>(),
     ),
   );
+  sl.registerLazySingleton<ExplorationMapRepository>(
+    () => ExplorationMapRepositoryImpl(
+      localDataSource: sl<ExplorationMapLocalDataSource>(),
+    ),
+  );
+  sl.registerLazySingleton<RadarPreferencesRepository>(
+    () => RadarPreferencesRepositoryImpl(
+      localDataSource: sl<RadarPreferencesLocalDataSource>(),
+    ),
+  );
 
   // Use cases
   sl.registerLazySingleton<ExplorationWatchNearbyPlants>(
     () => ExplorationWatchNearbyPlants(repository: sl<ExplorationRepository>()),
+  );
+  sl.registerLazySingleton<GetExplorationMapRegions>(
+    () => GetExplorationMapRegions(repository: sl<ExplorationMapRepository>()),
+  );
+  sl.registerLazySingleton<GetMapTileCacheMaxSizeBytes>(
+    () => GetMapTileCacheMaxSizeBytes(
+      repository: sl<RadarPreferencesRepository>(),
+    ),
+  );
+  sl.registerLazySingleton<GetRadarRotationEnabled>(
+    () => GetRadarRotationEnabled(repository: sl<RadarPreferencesRepository>()),
+  );
+  sl.registerLazySingleton<SetRadarRotationEnabled>(
+    () => SetRadarRotationEnabled(repository: sl<RadarPreferencesRepository>()),
   );
 
   //! Plant Progress

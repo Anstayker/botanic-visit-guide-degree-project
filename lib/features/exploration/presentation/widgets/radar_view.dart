@@ -90,7 +90,9 @@ class _RadarViewState extends State<RadarView>
                   // Icono del usuario (centro, rotando)
                   Center(
                     child: Transform.rotate(
-                      angle: (state.userPosition?.heading ?? 0) * math.pi / 180,
+                      angle: state.isHeadingRotationEnabled
+                          ? (state.userPosition?.heading ?? 0) * math.pi / 180
+                          : 0,
                       child: Container(
                         width: 64,
                         height: 64,

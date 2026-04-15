@@ -3,9 +3,14 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 
 import '../../../../injection_container.dart';
 import '../../domain/usecases/exploration_watch_nearby_plants.dart';
+import '../../domain/usecases/get_map_tile_cache_max_size_bytes.dart';
+import '../../domain/usecases/get_exploration_map_regions.dart';
+import '../../domain/usecases/get_radar_rotation_enabled.dart';
+import '../../domain/usecases/set_radar_rotation_enabled.dart';
 import '../../../plant_progress/domain/usecases/discover_plant.dart';
 import '../bloc/exploration_bloc.dart';
 import '../widgets/radar_view.dart';
+import '../widgets/exploration_map_view.dart';
 
 class RadarPage extends StatelessWidget {
   const RadarPage({super.key});
@@ -16,6 +21,11 @@ class RadarPage extends StatelessWidget {
       create: (_) => ExplorationBloc(
         watchNearbyPlants: sl<ExplorationWatchNearbyPlants>(),
         discoverPlant: sl<DiscoverPlant>(),
+        getExplorationMapRegions: sl<GetExplorationMapRegions>(),
+        getMapTileCacheMaxSizeBytes: sl<GetMapTileCacheMaxSizeBytes>(),
+        getRadarRotationEnabled: sl<GetRadarRotationEnabled>(),
+        setRadarRotationEnabled: sl<SetRadarRotationEnabled>(),
+        locationService: sl(),
       )..add(ExplorationWatchStarted()),
       child: const _RadarPageView(),
     );
@@ -220,7 +230,25 @@ class _RadarPageView extends StatelessWidget {
                             );
                           }
 
-                          return const RadarView();
+                          return Stack(
+                            fit: StackFit.expand,
+                            children: [
+                              const ExplorationMapView(),
+                              Container(
+                                decoration: BoxDecoration(
+                                  gradient: LinearGradient(
+                                    begin: Alignment.topCenter,
+                                    end: Alignment.bottomCenter,
+                                    colors: [
+                                      Colors.black.withValues(alpha: 0.08),
+                                      Colors.black.withValues(alpha: 0.18),
+                                    ],
+                                  ),
+                                ),
+                              ),
+                              const RadarView(),
+                            ],
+                          );
                         },
                       ),
                     ),
@@ -230,7 +258,7 @@ class _RadarPageView extends StatelessWidget {
 
               // Botón de escaneo
               Padding(
-                padding: const EdgeInsets.fromLTRB(20, 20, 20, 28),
+                padding: const EdgeInsets.fromLTRB(20, 20, 20, 12),
                 child: BlocBuilder<ExplorationBloc, ExplorationState>(
                   builder: (context, state) {
                     final isScanning = state.isSonarActive;
@@ -257,6 +285,27 @@ class _RadarPageView extends StatelessWidget {
                         ),
                         shape: const StadiumBorder(),
                       ),
+                    );
+                  },
+                ),
+              ),
+
+              Padding(
+                padding: const EdgeInsets.fromLTRB(20, 0, 20, 28),
+                child: BlocBuilder<ExplorationBloc, ExplorationState>(
+                  builder: (context, state) {
+                    return SwitchListTile.adaptive(
+                      contentPadding: EdgeInsets.zero,
+                      title: const Text('Rotar con brújula'),
+                      subtitle: const Text(
+                        'Desactívala para mantener la referencia fija del radar.',
+                      ),
+                      value: state.isHeadingRotationEnabled,
+                      onChanged: (value) {
+                        context.read<ExplorationBloc>().add(
+                          ExplorationRotationPreferenceToggled(enabled: value),
+                        );
+                      },
                     );
                   },
                 ),
