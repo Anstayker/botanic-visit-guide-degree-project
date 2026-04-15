@@ -15,3 +15,19 @@ class UnknownFailure extends Failure {
   @override
   String toString() => 'UnknownFailure: $message';
 }
+
+class InvalidQrCodeFailure extends Failure {
+  const InvalidQrCodeFailure([super.message = 'El QR escaneado no es valido.']);
+
+  @override
+  String toString() => 'InvalidQrCodeFailure: $message';
+}
+
+class PlantNotFoundFailure extends Failure {
+  const PlantNotFoundFailure([
+    super.message = 'No se encontro una planta asociada a este QR.',
+  ]);
+
+  @override
+  String toString() => 'PlantNotFoundFailure: $message';
+}

@@ -3,11 +3,13 @@ import 'package:flutter/material.dart';
 import '../../features/exploration/presentation/pages/radar_page.dart';
 import '../../features/home/presentation/pages/home_page.dart';
 import '../../features/plant_details/presentation/pages/plant_details_page.dart';
+import '../../features/qr_scanner/presentation/pages/qr_scanner.page.dart';
 
 class AppRoutes {
   static const home = '/';
   static const plantDetails = '/plant_details';
   static const radarPage = '/radar';
+  static const qrScanner = '/qr_scanner';
   static Route onGenerateRoutes(RouteSettings settings) {
     switch (settings.name) {
       case home:
@@ -27,6 +29,8 @@ class AppRoutes {
         );
       case radarPage:
         return _materialRoute(const RadarPage());
+      case qrScanner:
+        return _materialRoute(const QRScanner());
       default:
         return _materialRoute(const HomePage()); // Fallback to HomePage
     }

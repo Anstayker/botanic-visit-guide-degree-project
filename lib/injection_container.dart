@@ -41,6 +41,7 @@ import 'features/plant_progress/domain/repositories/plant_progress_repository.da
 import 'features/plant_progress/domain/usecases/discover_plant.dart';
 import 'features/plant_progress/domain/usecases/set_all_plants_discovered.dart';
 import 'features/plant_progress/domain/usecases/watch_user_progress.dart';
+import 'features/qr_scanner/domain/usecases/validate_qr_code.dart';
 import 'firebase_options.dart';
 
 final sl = GetIt.instance;
@@ -180,6 +181,11 @@ Future<void> init() async {
   );
   sl.registerLazySingleton<WatchUserProgress>(
     () => WatchUserProgress(repository: sl<PlantProgressRepository>()),
+  );
+
+  //! Feature - QR Scanner
+  sl.registerLazySingleton<ValidateQrCode>(
+    () => ValidateQrCode(repository: sl<PlantDetailsRepository>()),
   );
 
   //! External

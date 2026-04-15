@@ -23,7 +23,7 @@ class HomePage extends StatelessWidget {
               0.35,
             ),
             onPressed: () {
-              Navigator.of(context).pushNamed(AppRoutes.radarPage);
+              Navigator.of(context).pushNamed(AppRoutes.qrScanner);
             },
             child: const Icon(Icons.camera_alt_outlined),
           ),
