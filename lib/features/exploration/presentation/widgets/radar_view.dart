@@ -16,7 +16,11 @@ class RadarView extends StatefulWidget {
 class _RadarViewState extends State<RadarView>
     with SingleTickerProviderStateMixin {
   late final AnimationController _sonarController;
-  static const double _maxRadarDistance = 100;
+  static const double _maxRadarDistance = 60;
+  static const double _radarVisibleRadiusFactor = 0.56;
+  static const double _approxDistanceThresholdMeters = 9;
+  static const double _visionConeHalfAngleDegrees = 28;
+  static const double _visionConeLengthFactor = 0.96;
 
   @override
   void initState() {
@@ -41,8 +45,7 @@ class _RadarViewState extends State<RadarView>
 
   @override
   Widget build(BuildContext context) {
-    final theme = Theme.of(context);
-    final colorScheme = theme.colorScheme;
+    final colorScheme = Theme.of(context).colorScheme;
 
     return BlocListener<ExplorationBloc, ExplorationState>(
       listenWhen: (previous, current) =>
@@ -56,7 +59,7 @@ class _RadarViewState extends State<RadarView>
                 constraints.maxWidth,
                 constraints.maxHeight,
               );
-              final radarRadius = size * 1;
+              final radarRadius = size * _radarVisibleRadiusFactor;
               final center = Offset(
                 constraints.maxWidth / 2,
                 constraints.maxHeight / 2,
@@ -64,7 +67,6 @@ class _RadarViewState extends State<RadarView>
 
               return Stack(
                 children: [
-                  // Anillos del radar
                   Center(
                     child: CustomPaint(
                       size: Size.square(size * 0.85),
@@ -73,8 +75,6 @@ class _RadarViewState extends State<RadarView>
                       ),
                     ),
                   ),
-
-                  // Sonar (pulso expandible)
                   if (state.isSonarActive)
                     Center(
                       child: CustomPaint(
@@ -86,16 +86,14 @@ class _RadarViewState extends State<RadarView>
                         ),
                       ),
                     ),
-
-                  // Icono del usuario (centro, rotando)
                   Center(
                     child: Transform.rotate(
                       angle: state.isHeadingRotationEnabled
                           ? (state.userPosition?.heading ?? 0) * math.pi / 180
                           : 0,
                       child: Container(
-                        width: 64,
-                        height: 64,
+                        width: 36,
+                        height: 36,
                         decoration: BoxDecoration(
                           shape: BoxShape.circle,
                           color: colorScheme.primary.withValues(alpha: 0.9),
@@ -110,22 +108,30 @@ class _RadarViewState extends State<RadarView>
                         child: const Icon(
                           Icons.person,
                           color: Colors.white,
-                          size: 30,
+                          size: 18,
                         ),
                       ),
                     ),
                   ),
-
-                  // Plantas detectadas
+                  if (!state.isHeadingRotationEnabled &&
+                      state.userPosition != null)
+                    Center(
+                      child: _HeadingConeIndicator(
+                        headingDegrees: state.userPosition!.heading,
+                        color: colorScheme.primary,
+                        coneHalfAngleDegrees: _visionConeHalfAngleDegrees,
+                        coneLengthFactor: _visionConeLengthFactor,
+                      ),
+                    ),
                   for (final plant in state.plants.where(
                     (p) => p.isVisibleInRadar && p.distance > 0,
                   ))
                     _buildPlantMarker(
-                      context: context,
                       plant: plant,
+                      state: state,
                       center: center,
                       radarRadius: radarRadius,
-                      colorScheme: colorScheme,
+                      color: colorScheme.primary,
                     ),
                 ],
               );
@@ -137,46 +143,203 @@ class _RadarViewState extends State<RadarView>
   }
 
   Widget _buildPlantMarker({
-    required BuildContext context,
     required ExplorationPlant plant,
+    required ExplorationState state,
     required Offset center,
     required double radarRadius,
-    required ColorScheme colorScheme,
+    required Color color,
   }) {
-    final angle = plant.bearing * math.pi / 180;
+    final angle =
+        _plotBearingDegrees(plant: plant, state: state) * math.pi / 180;
     final normalizedDistance = (plant.distance / _maxRadarDistance).clamp(
       0.0,
       1.0,
     );
     final markerOffset = Offset(
-      center.dx + math.cos(angle) * radarRadius * normalizedDistance,
-      center.dy + math.sin(angle) * radarRadius * normalizedDistance,
+      center.dx + math.sin(angle) * radarRadius * normalizedDistance,
+      center.dy - math.cos(angle) * radarRadius * normalizedDistance,
     );
 
     return Positioned(
-      left: markerOffset.dx - 26,
-      top: markerOffset.dy - 26,
-      child: _PlantMarker(plant: plant, color: colorScheme.primary),
+      left: markerOffset.dx - 18,
+      top: markerOffset.dy - 18,
+      child: _PlantMarker(
+        plant: plant,
+        color: color,
+        distanceLabel: _distanceLabel(plant.distance),
+      ),
+    );
+  }
+
+  double _plotBearingDegrees({
+    required ExplorationPlant plant,
+    required ExplorationState state,
+  }) {
+    if (state.isHeadingRotationEnabled) {
+      return plant.bearing;
+    }
+
+    final heading = state.userPosition?.heading ?? 0;
+    return _normalizeBearing(plant.bearing + heading);
+  }
+
+  double _normalizeBearing(double value) {
+    return (value % 360 + 360) % 360;
+  }
+
+  String _distanceLabel(double distanceMeters) {
+    final rounded = distanceMeters.toStringAsFixed(0);
+    if (distanceMeters <= _approxDistanceThresholdMeters) {
+      return '~${rounded}m';
+    }
+    return '${rounded}m';
+  }
+}
+
+class _HeadingConeIndicator extends StatelessWidget {
+  const _HeadingConeIndicator({
+    required this.headingDegrees,
+    required this.color,
+    required this.coneHalfAngleDegrees,
+    required this.coneLengthFactor,
+  });
+
+  final double headingDegrees;
+  final Color color;
+  final double coneHalfAngleDegrees;
+  final double coneLengthFactor;
+
+  @override
+  Widget build(BuildContext context) {
+    final headingRadians = headingDegrees * math.pi / 180;
+    final coneHalfAngleRadians = coneHalfAngleDegrees * math.pi / 180;
+
+    return SizedBox.square(
+      dimension: 150,
+      child: CustomPaint(
+        painter: _HeadingConePainter(
+          headingRadians: headingRadians,
+          coneHalfAngleRadians: coneHalfAngleRadians,
+          color: color,
+          coneLengthFactor: coneLengthFactor,
+        ),
+      ),
     );
   }
 }
 
+class _HeadingConePainter extends CustomPainter {
+  _HeadingConePainter({
+    required this.headingRadians,
+    required this.coneHalfAngleRadians,
+    required this.color,
+    required this.coneLengthFactor,
+  });
+
+  final double headingRadians;
+  final double coneHalfAngleRadians;
+  final Color color;
+  final double coneLengthFactor;
+
+  @override
+  void paint(Canvas canvas, Size size) {
+    final center = size.center(Offset.zero);
+    final maxRadius = size.shortestSide * coneLengthFactor / 2;
+    final innerRadius = size.shortestSide * 0.12;
+
+    final outerLeft = Offset(
+      center.dx + math.sin(-coneHalfAngleRadians) * maxRadius,
+      center.dy - math.cos(-coneHalfAngleRadians) * maxRadius,
+    );
+    final outerRight = Offset(
+      center.dx + math.sin(coneHalfAngleRadians) * maxRadius,
+      center.dy - math.cos(coneHalfAngleRadians) * maxRadius,
+    );
+    final innerLeft = Offset(
+      center.dx + math.sin(-coneHalfAngleRadians) * innerRadius,
+      center.dy - math.cos(-coneHalfAngleRadians) * innerRadius,
+    );
+    final innerRight = Offset(
+      center.dx + math.sin(coneHalfAngleRadians) * innerRadius,
+      center.dy - math.cos(coneHalfAngleRadians) * innerRadius,
+    );
+
+    final path = Path()
+      ..moveTo(innerLeft.dx, innerLeft.dy)
+      ..lineTo(outerLeft.dx, outerLeft.dy)
+      ..arcTo(
+        Rect.fromCircle(center: center, radius: maxRadius),
+        -math.pi / 2 - coneHalfAngleRadians,
+        coneHalfAngleRadians * 2,
+        false,
+      )
+      ..lineTo(innerRight.dx, innerRight.dy)
+      ..arcTo(
+        Rect.fromCircle(center: center, radius: innerRadius),
+        -math.pi / 2 + coneHalfAngleRadians,
+        -coneHalfAngleRadians * 2,
+        false,
+      )
+      ..close();
+
+    final shader = RadialGradient(
+      colors: [
+        color.withValues(alpha: 0.30),
+        color.withValues(alpha: 0.10),
+        Colors.transparent,
+      ],
+      stops: const [0.0, 0.45, 1.0],
+    ).createShader(Rect.fromCircle(center: center, radius: maxRadius));
+
+    canvas.save();
+    canvas.translate(center.dx, center.dy);
+    canvas.rotate(headingRadians);
+    canvas.translate(-center.dx, -center.dy);
+
+    final paint = Paint()
+      ..shader = shader
+      ..style = PaintingStyle.fill;
+    canvas.drawPath(path, paint);
+
+    final edgePaint = Paint()
+      ..color = color.withValues(alpha: 0.28)
+      ..style = PaintingStyle.stroke
+      ..strokeWidth = 1.1;
+    canvas.drawPath(path, edgePaint);
+
+    canvas.restore();
+  }
+
+  @override
+  bool shouldRepaint(covariant _HeadingConePainter oldDelegate) {
+    return oldDelegate.headingRadians != headingRadians ||
+        oldDelegate.coneHalfAngleRadians != coneHalfAngleRadians ||
+        oldDelegate.color != color ||
+        oldDelegate.coneLengthFactor != coneLengthFactor;
+  }
+}
+
 class _PlantMarker extends StatelessWidget {
-  const _PlantMarker({required this.plant, required this.color});
+  const _PlantMarker({
+    required this.plant,
+    required this.color,
+    required this.distanceLabel,
+  });
 
   final ExplorationPlant plant;
   final Color color;
+  final String distanceLabel;
 
   @override
   Widget build(BuildContext context) {
     return Tooltip(
-      message: '${plant.plant.name} (${plant.distance.toStringAsFixed(0)}m)',
+      message: '${plant.plant.name} ($distanceLabel)',
       child: Column(
         mainAxisSize: MainAxisSize.min,
         children: [
           Container(
-            width: 52,
-            height: 52,
+            width: 36,
+            height: 36,
             decoration: BoxDecoration(
               shape: BoxShape.circle,
               color: plant.plant.isDiscovered
@@ -186,15 +349,15 @@ class _PlantMarker extends StatelessWidget {
                 color: plant.plant.isDiscovered
                     ? color.withValues(alpha: 0.9)
                     : color.withValues(alpha: 0.7),
-                width: plant.plant.isDiscovered ? 2 : 1.2,
+                width: plant.plant.isDiscovered ? 1.6 : 1.0,
               ),
             ),
-            child: Icon(Icons.local_florist, color: color, size: 26),
+            child: Icon(Icons.local_florist, color: color, size: 18),
           ),
-          const SizedBox(height: 6),
+          const SizedBox(height: 4),
           Text(
             '${plant.plant.name}'
-            '\n${plant.distance.toStringAsFixed(0)}m',
+            '\n$distanceLabel',
             textAlign: TextAlign.center,
             style: Theme.of(context).textTheme.labelSmall?.copyWith(
               color: plant.plant.isDiscovered ? Colors.white : Colors.white70,

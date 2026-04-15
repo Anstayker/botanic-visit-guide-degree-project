@@ -15,10 +15,34 @@ class ExplorationMapView extends StatefulWidget {
   State<ExplorationMapView> createState() => _ExplorationMapViewState();
 }
 
-class _ExplorationMapViewState extends State<ExplorationMapView> {
+class _ExplorationMapViewState extends State<ExplorationMapView>
+    with SingleTickerProviderStateMixin {
   static const String _tileUrlTemplate =
       'https://tile.openstreetmap.org/{z}/{x}/{y}.png';
+  static const double _mapZoomOffset = 1.4;
+  static const double _minCameraMoveMeters = 1.5;
+  static const Duration _rotationAnimationDuration = Duration(
+    milliseconds: 240,
+  );
+  static const double _rotationEpsilonDegrees = 0.8;
+
   final Map<int, NetworkTileProvider> _tileProvidersBySize = {};
+  final MapController _mapController = MapController();
+  final Distance _distance = const Distance();
+  late final AnimationController _rotationController;
+  Animation<double>? _rotationAnimation;
+  VoidCallback? _rotationTick;
+  double _currentRotationDegrees = 0;
+  LatLng? _lastCameraCenter;
+
+  @override
+  void initState() {
+    super.initState();
+    _rotationController = AnimationController(
+      vsync: this,
+      duration: _rotationAnimationDuration,
+    );
+  }
 
   NetworkTileProvider _tileProviderFor(int maxCacheSizeBytes) {
     return _tileProvidersBySize.putIfAbsent(
@@ -34,6 +58,10 @@ class _ExplorationMapViewState extends State<ExplorationMapView> {
 
   @override
   void dispose() {
+    if (_rotationTick != null && _rotationAnimation != null) {
+      _rotationAnimation!.removeListener(_rotationTick!);
+    }
+    _rotationController.dispose();
     for (final tileProvider in _tileProvidersBySize.values) {
       unawaited(tileProvider.dispose());
     }
@@ -44,104 +72,123 @@ class _ExplorationMapViewState extends State<ExplorationMapView> {
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
 
-    return BlocBuilder<ExplorationBloc, ExplorationState>(
-      builder: (context, state) {
-        final region = _pickRegion(state.mapRegions);
+    return BlocListener<ExplorationBloc, ExplorationState>(
+      listenWhen: (previous, current) =>
+          previous.userPosition != current.userPosition ||
+          previous.isHeadingRotationEnabled != current.isHeadingRotationEnabled,
+      listener: (context, state) {
         final userPosition = state.userPosition;
-        final tileProvider = _tileProviderFor(state.mapTileCacheMaxSizeBytes);
+        if (userPosition == null) {
+          _lastCameraCenter = null;
+          _animateRotationTo(0);
+          return;
+        }
 
-        final mapCenter = userPosition == null
-            ? LatLng(region.centerLatitude, region.centerLongitude)
-            : LatLng(userPosition.latitude, userPosition.longitude);
+        final region = _pickRegion(state.mapRegions);
+        final target = LatLng(userPosition.latitude, userPosition.longitude);
+        final targetZoom = _effectiveZoom(region);
+        final targetRotation = _targetRotationDegrees(state);
 
-        return Stack(
-          fit: StackFit.expand,
-          children: [
-            FlutterMap(
-              options: MapOptions(
-                initialCenter: mapCenter,
-                initialZoom: region.recommendedZoom,
-                minZoom: region.minimumZoom,
-                maxZoom: region.maximumZoom,
-                interactionOptions: const InteractionOptions(
-                  flags: InteractiveFlag.none,
-                ),
-              ),
-              children: [
-                TileLayer(
-                  urlTemplate: _tileUrlTemplate,
-                  userAgentPackageName: 'botanic_guide',
-                  retinaMode: true,
-                  tileProvider: tileProvider,
-                  tileBuilder: (context, widget, tile) => widget,
-                ),
-                MarkerLayer(markers: _buildMarkers(state)),
-              ],
-            ),
-            Positioned.fill(
-              child: DecoratedBox(
-                decoration: BoxDecoration(
-                  gradient: LinearGradient(
-                    begin: Alignment.topCenter,
-                    end: Alignment.bottomCenter,
-                    colors: [
-                      Colors.black.withValues(alpha: 0.10),
-                      Colors.black.withValues(alpha: 0.28),
-                    ],
+        if (!mounted) return;
+        try {
+          if (_shouldMoveCameraTo(target)) {
+            _mapController.move(target, targetZoom);
+            _lastCameraCenter = target;
+          }
+
+          _animateRotationTo(targetRotation);
+        } catch (_) {
+          // Ignorado: puede ocurrir antes de que el mapa termine de montarse.
+        }
+      },
+      child: BlocBuilder<ExplorationBloc, ExplorationState>(
+        builder: (context, state) {
+          final region = _pickRegion(state.mapRegions);
+          final userPosition = state.userPosition;
+          final tileProvider = _tileProviderFor(state.mapTileCacheMaxSizeBytes);
+          final zoom = _effectiveZoom(region);
+          final rotation = _normalizeDegrees(_targetRotationDegrees(state));
+
+          final mapCenter = userPosition == null
+              ? LatLng(region.centerLatitude, region.centerLongitude)
+              : LatLng(userPosition.latitude, userPosition.longitude);
+
+          return Stack(
+            fit: StackFit.expand,
+            children: [
+              FlutterMap(
+                mapController: _mapController,
+                options: MapOptions(
+                  initialCenter: mapCenter,
+                  initialZoom: zoom,
+                  initialRotation: rotation,
+                  minZoom: region.minimumZoom,
+                  maxZoom: region.maximumZoom,
+                  interactionOptions: const InteractionOptions(
+                    flags: InteractiveFlag.none,
                   ),
                 ),
-              ),
-            ),
-            Positioned(
-              left: 16,
-              top: 16,
-              child: _MapBadge(icon: Icons.map_outlined, label: region.name),
-            ),
-            Positioned(
-              right: 16,
-              top: 16,
-              child: _MapBadge(
-                icon: state.isHeadingRotationEnabled
-                    ? Icons.explore
-                    : Icons.explore_off,
-                label: state.isHeadingRotationEnabled
-                    ? 'Rotación activa'
-                    : 'Norte fijo',
-              ),
-            ),
-            Positioned(
-              left: 16,
-              right: 16,
-              bottom: 16,
-              child: _MapFooter(
-                title: 'Contexto espacial',
-                subtitle:
-                    'La capa de mapa se apoya en datos locales y puede quedar vacía si no hay conexión o caché.',
-              ),
-            ),
-            if (state.plants.isEmpty)
-              Center(
-                child: Container(
-                  padding: const EdgeInsets.symmetric(
-                    horizontal: 16,
-                    vertical: 12,
+                children: [
+                  TileLayer(
+                    urlTemplate: _tileUrlTemplate,
+                    userAgentPackageName: 'botanic_guide',
+                    retinaMode: true,
+                    tileProvider: tileProvider,
+                    tileBuilder: (context, widget, tile) => widget,
                   ),
-                  decoration: BoxDecoration(
-                    color: Colors.black.withValues(alpha: 0.55),
-                    borderRadius: BorderRadius.circular(18),
-                  ),
-                  child: Text(
-                    'Sin plantas cercanas para mostrar',
-                    style: theme.textTheme.labelLarge?.copyWith(
-                      color: Colors.white,
-                      fontWeight: FontWeight.w600,
+                ],
+              ),
+              Positioned(
+                left: 16,
+                top: 16,
+                child: _MapBadge(icon: Icons.map_outlined, label: region.name),
+              ),
+              Positioned(
+                right: 16,
+                top: 16,
+                child: _MapBadge(
+                  icon: state.isHeadingRotationEnabled
+                      ? Icons.explore
+                      : Icons.explore_off,
+                  label: state.isHeadingRotationEnabled
+                      ? 'Rotación activa'
+                      : 'Norte fijo',
+                ),
+              ),
+              Positioned(
+                left: 16,
+                right: 16,
+                bottom: 16,
+                child: _MapFooter(
+                  title: 'Contexto espacial',
+                  subtitle:
+                      'El mapa sigue tu posición en tiempo real; las plantas se muestran solo en el radar.',
+                ),
+              ),
+              if (state.plants.isEmpty)
+                Center(
+                  child: Container(
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 16,
+                      vertical: 12,
+                    ),
+                    decoration: BoxDecoration(
+                      color: Colors.black.withValues(alpha: 0.55),
+                      borderRadius: BorderRadius.circular(18),
+                    ),
+                    child: Text(
+                      'Sin plantas cercanas para mostrar',
+                      style: theme.textTheme.labelLarge?.copyWith(
+                        color: Colors.white,
+                        fontWeight: FontWeight.w600,
+                      ),
                     ),
                   ),
                 ),
-              ),
-          ],
-        );
-      },
+            ],
+          );
+        },
+      ),
     );
   }
 
@@ -167,54 +214,84 @@ class _ExplorationMapViewState extends State<ExplorationMapView> {
     );
   }
 
-  List<Marker> _buildMarkers(ExplorationState state) {
-    final markers = <Marker>[];
+  double _effectiveZoom(ExplorationMapRegion region) {
+    final zoom = region.recommendedZoom + _mapZoomOffset;
+    return zoom.clamp(region.minimumZoom, region.maximumZoom).toDouble();
+  }
 
-    final userPosition = state.userPosition;
-    if (userPosition != null) {
-      markers.add(
-        Marker(
-          point: LatLng(userPosition.latitude, userPosition.longitude),
-          width: 44,
-          height: 44,
-          child: Container(
-            decoration: BoxDecoration(
-              shape: BoxShape.circle,
-              color: Colors.white,
-              border: Border.all(color: Colors.blueAccent, width: 4),
-              boxShadow: const [
-                BoxShadow(
-                  color: Colors.black26,
-                  blurRadius: 14,
-                  spreadRadius: 1,
-                ),
-              ],
-            ),
-            child: const Icon(Icons.person_pin_circle, color: Colors.blue),
-          ),
-        ),
-      );
+  double _targetRotationDegrees(ExplorationState state) {
+    if (!state.isHeadingRotationEnabled) {
+      return 0;
     }
 
-    for (final plant in state.plants.take(12)) {
-      markers.add(
-        Marker(
-          point: LatLng(
-            plant.plant.location.latitude,
-            plant.plant.location.longitude,
-          ),
-          width: 34,
-          height: 34,
-          child: Icon(
-            Icons.local_florist,
-            color: plant.plant.isDiscovered ? Colors.greenAccent : Colors.white,
-            size: 28,
-          ),
-        ),
-      );
+    // Invertimos el signo para sincronizar la rotación visual del mapa
+    // con el sistema de bearings que ya usa el radar.
+    return -(state.userPosition?.heading ?? 0);
+  }
+
+  void _animateRotationTo(double targetRotationDegrees) {
+    final current = _normalizeDegrees(_currentRotationDegrees);
+    final target = _normalizeDegrees(targetRotationDegrees);
+    final shortestDelta = _shortestSignedDelta(current, target);
+
+    if (shortestDelta.abs() < _rotationEpsilonDegrees) {
+      return;
     }
 
-    return markers;
+    final previousAnimation = _rotationAnimation;
+
+    _rotationAnimation =
+        Tween<double>(begin: current, end: current + shortestDelta).animate(
+          CurvedAnimation(
+            parent: _rotationController,
+            curve: Curves.easeOutCubic,
+          ),
+        );
+
+    if (_rotationTick != null && previousAnimation != null) {
+      previousAnimation.removeListener(_rotationTick!);
+    }
+
+    _rotationTick = () {
+      final rotation = _rotationAnimation?.value;
+      if (rotation == null) return;
+      try {
+        _mapController.rotate(_normalizeDegrees(rotation));
+      } catch (_) {
+        // Ignorado: puede ocurrir si el mapa aún no está montado.
+      }
+    };
+
+    _rotationAnimation?.addListener(_rotationTick!);
+
+    _rotationController
+      ..stop()
+      ..reset()
+      ..forward();
+
+    _currentRotationDegrees = target;
+  }
+
+  double _normalizeDegrees(double degrees) {
+    return (degrees % 360 + 360) % 360;
+  }
+
+  double _shortestSignedDelta(double from, double to) {
+    final diff = _normalizeDegrees(to - from);
+    if (diff > 180) {
+      return diff - 360;
+    }
+    return diff;
+  }
+
+  bool _shouldMoveCameraTo(LatLng target) {
+    final previous = _lastCameraCenter;
+    if (previous == null) {
+      return true;
+    }
+
+    final distanceMeters = _distance.as(LengthUnit.Meter, previous, target);
+    return distanceMeters >= _minCameraMoveMeters;
   }
 }
 
