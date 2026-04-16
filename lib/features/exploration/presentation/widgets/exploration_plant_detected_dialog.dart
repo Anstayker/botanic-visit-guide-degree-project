@@ -8,22 +8,22 @@ class ExplorationPlantDetectedDialog extends StatelessWidget {
   const ExplorationPlantDetectedDialog({
     super.key,
     required this.explorationPlant,
-    required this.onUnlock,
+    required this.onViewDetails,
   });
 
   final ExplorationPlant explorationPlant;
-  final VoidCallback onUnlock;
+  final VoidCallback onViewDetails;
 
   static Future<void> show(
     BuildContext context,
     ExplorationPlant explorationPlant, {
-    required VoidCallback onUnlock,
+    required VoidCallback onViewDetails,
   }) {
     return showDialog<void>(
       context: context,
       builder: (dialogContext) => ExplorationPlantDetectedDialog(
         explorationPlant: explorationPlant,
-        onUnlock: onUnlock,
+        onViewDetails: onViewDetails,
       ),
     );
   }
@@ -71,17 +71,29 @@ class ExplorationPlantDetectedDialog extends StatelessWidget {
         ],
       ),
       actions: [
-        TextButton(
-          onPressed: () => Navigator.of(context).pop(),
-          child: const Text('Cerrar'),
-        ),
-        FilledButton.icon(
-          onPressed: () {
-            Navigator.of(context).pop();
-            onUnlock();
-          },
-          icon: const Icon(Icons.lock_open),
-          label: const Text('Desbloquear'),
+        SizedBox(
+          width: double.infinity,
+          child: Row(
+            children: [
+              Expanded(
+                child: TextButton(
+                  onPressed: () => Navigator.of(context).pop(),
+                  child: const Text('Seguir explorando'),
+                ),
+              ),
+              const SizedBox(width: 8),
+              Expanded(
+                child: FilledButton.icon(
+                  onPressed: () {
+                    Navigator.of(context).pop();
+                    onViewDetails();
+                  },
+                  icon: const Icon(Icons.menu_book),
+                  label: const Text('Ver detalles'),
+                ),
+              ),
+            ],
+          ),
         ),
       ],
     );

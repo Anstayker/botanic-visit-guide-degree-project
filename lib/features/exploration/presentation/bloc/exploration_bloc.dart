@@ -61,6 +61,8 @@ class ExplorationBloc extends Bloc<ExplorationEvent, ExplorationState> {
     on<ExplorationSonnarTriggered>(_onSonarButtonPressed);
     on<ExplorationRotationPreferenceToggled>(_onRotationPreferenceToggled);
     on<ExplorationPlantUnlockRequested>(_onPlantUnlockRequested);
+    on<ExplorationCaptureRequested>(_onCaptureRequested);
+    on<ExplorationNearbyPlantDetectionCleared>(_onNearbyPlantDetectionCleared);
   }
 
   Future<void> _onStarted(
@@ -187,28 +189,31 @@ class ExplorationBloc extends Bloc<ExplorationEvent, ExplorationState> {
     _NearbyPlantsUpdated event,
     Emitter<ExplorationState> emit,
   ) {
-    ExplorationPlant? detectedPlant;
-    for (final plant in event.nearbyPlants) {
-      if (plant.isVisibleInRadar && !plant.plant.isDiscovered) {
-        detectedPlant = plant;
-        break;
-      }
-    }
-
-    final previousDetectedId = state.nearbyPlantDetected?.plant.id;
-    final currentDetectedId = detectedPlant?.plant.id;
-    final shouldUpdateDetectedPlant = previousDetectedId != currentDetectedId;
-
     emit(
       state.copyWith(
         status: ExplorationStatus.success,
         plants: event.nearbyPlants,
-        nearbyPlantDetected: shouldUpdateDetectedPlant
-            ? detectedPlant
-            : state.nearbyPlantDetected,
+        nearbyPlantDetected: _resolveCurrentDetection(event.nearbyPlants),
         errorMessage: null,
       ),
     );
+  }
+
+  ExplorationPlant? _resolveCurrentDetection(List<ExplorationPlant> plants) {
+    final current = state.nearbyPlantDetected;
+    if (current == null) {
+      return null;
+    }
+
+    for (final plant in plants) {
+      if (plant.plant.id == current.plant.id &&
+          plant.isVisibleInRadar &&
+          !plant.plant.isDiscovered) {
+        return current;
+      }
+    }
+
+    return null;
   }
 
   Future<void> _onSonarButtonPressed(
@@ -257,6 +262,48 @@ class ExplorationBloc extends Bloc<ExplorationEvent, ExplorationState> {
       ),
       (_) => emit(state.copyWith(errorMessage: null)),
     );
+  }
+
+  Future<void> _onCaptureRequested(
+    ExplorationCaptureRequested event,
+    Emitter<ExplorationState> emit,
+  ) async {
+    ExplorationPlant? selectedPlant;
+    for (final plant in state.plants) {
+      if (plant.plant.id == event.plantId &&
+          plant.isVisibleInRadar &&
+          !plant.plant.isDiscovered) {
+        selectedPlant = plant;
+        break;
+      }
+    }
+
+    if (selectedPlant == null) {
+      return;
+    }
+
+    final result = await discoverPlant(
+      plant_progress.Params(plantId: selectedPlant.plant.id),
+    );
+
+    result.fold(
+      (failure) => emit(
+        state.copyWith(
+          status: ExplorationStatus.error,
+          errorMessage: failure.message,
+        ),
+      ),
+      (_) => emit(
+        state.copyWith(nearbyPlantDetected: selectedPlant, errorMessage: null),
+      ),
+    );
+  }
+
+  void _onNearbyPlantDetectionCleared(
+    ExplorationNearbyPlantDetectionCleared event,
+    Emitter<ExplorationState> emit,
+  ) {
+    emit(state.copyWith(nearbyPlantDetected: null));
   }
 
   @override

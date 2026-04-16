@@ -109,3 +109,14 @@ class ExplorationPlantUnlockRequested extends ExplorationEvent {
   @override
   List<Object> get props => [plantId];
 }
+
+class ExplorationCaptureRequested extends ExplorationEvent {
+  final String plantId;
+
+  const ExplorationCaptureRequested({required this.plantId});
+
+  @override
+  List<Object> get props => [plantId];
+}
+
+class ExplorationNearbyPlantDetectionCleared extends ExplorationEvent {}

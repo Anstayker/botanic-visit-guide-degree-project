@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 
+import '../../../../config/routes/app_routes.dart';
 import '../bloc/exploration_bloc.dart';
 import 'exploration_plant_detected_dialog.dart';
 import 'radar_page_actions.dart';
@@ -21,22 +22,31 @@ class RadarPageBody extends StatelessWidget {
         listeners: [
           BlocListener<ExplorationBloc, ExplorationState>(
             listenWhen: (previous, current) =>
-                previous.nearbyPlantDetected != current.nearbyPlantDetected &&
+                previous.nearbyPlantDetected?.plant.id !=
+                    current.nearbyPlantDetected?.plant.id &&
                 current.nearbyPlantDetected != null,
-            listener: (context, state) {
+            listener: (context, state) async {
               final explorationPlant = state.nearbyPlantDetected!;
 
-              ExplorationPlantDetectedDialog.show(
+              await ExplorationPlantDetectedDialog.show(
                 context,
                 explorationPlant,
-                onUnlock: () {
-                  context.read<ExplorationBloc>().add(
-                    ExplorationPlantUnlockRequested(
-                      plantId: explorationPlant.plant.id,
-                    ),
+                onViewDetails: () {
+                  Navigator.of(context).pushNamed(
+                    AppRoutes.plantDetails,
+                    arguments: {
+                      'plantId': explorationPlant.plant.id,
+                      'imageUrl': explorationPlant.plant.image,
+                    },
                   );
                 },
               );
+
+              if (context.mounted) {
+                context.read<ExplorationBloc>().add(
+                  ExplorationNearbyPlantDetectionCleared(),
+                );
+              }
             },
           ),
           BlocListener<ExplorationBloc, ExplorationState>(
