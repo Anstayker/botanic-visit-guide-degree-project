@@ -10,6 +10,8 @@ dependencies:
   flutter:
     sdk: flutter
 
+  # Typography
+  google_fonts: ^8.0.2
   # Service Locator
   get_it: ^9.2.0
   # Value equality
@@ -38,6 +40,8 @@ dependencies:
   cloud_firestore: ^6.2.0
   # QR Scanner
   mobile_scanner: ^7.2.0
+  # External links
+  url_launcher: 6.3.1
 
 dev_dependencies:
   flutter_test:
@@ -53,3 +57,26 @@ flutter:
     - assets/images/
     - assets/images/plants/
     - assets/data/
+  fonts:
+    - family: Montserrat
+      fonts:
+        - asset: assets/fonts/Montserrat/static/Montserrat-Regular.ttf
+        - asset: assets/fonts/Montserrat/static/Montserrat-Italic.ttf
+          style: italic
+        - asset: assets/fonts/Montserrat/static/Montserrat-Medium.ttf
+          weight: 500
+        - asset: assets/fonts/Montserrat/static/Montserrat-MediumItalic.ttf
+          weight: 500
+          style: italic
+        - asset: assets/fonts/Montserrat/static/Montserrat-Bold.ttf
+          weight: 700
+        - asset: assets/fonts/Montserrat/static/Montserrat-BoldItalic.ttf
+          weight: 700
+          style: italic
+    - family: Lexend
+      fonts:
+        - asset: assets/fonts/Lexend/static/Lexend-Regular.ttf
+        - asset: assets/fonts/Lexend/static/Lexend-Medium.ttf
+          weight: 500
+        - asset: assets/fonts/Lexend/static/Lexend-Bold.ttf
+          weight: 700

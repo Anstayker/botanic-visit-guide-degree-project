@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:google_fonts/google_fonts.dart';
 
 import 'config/debug/debug_progress_bootstrap.dart';
 import 'config/routes/app_routes.dart';
@@ -10,6 +11,7 @@ import 'injection_container.dart' as dependencies;
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
+  GoogleFonts.config.allowRuntimeFetching = false;
   await dependencies.init();
   await dependencies.sl<PlantLocalDataSource>().initializeDataSource();
   await runDebugProgressBootstrap(

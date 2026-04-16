@@ -20,12 +20,12 @@ class HomePage extends StatelessWidget {
             backgroundColor: Color.lerp(
               Theme.of(context).floatingActionButtonTheme.backgroundColor,
               Colors.white,
-              0.35,
+              0.30,
             ),
             onPressed: () {
               Navigator.of(context).pushNamed(AppRoutes.qrScanner);
             },
-            child: const Icon(Icons.camera_alt_outlined),
+            child: const Icon(Icons.camera_alt_rounded),
           ),
           const SizedBox(height: 16),
           FloatingActionButton.extended(

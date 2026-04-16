@@ -1,3 +1,5 @@
+import 'dart:ui';
+
 import 'package:flutter/material.dart';
 
 import 'package:flutter_bloc/flutter_bloc.dart';
@@ -120,13 +122,16 @@ class EncyclopediaGridItem extends StatelessWidget {
             ),
           ),
 
+          if (!plant.isDiscovered)
+            const Positioned.fill(child: _LockedPlantOverlay()),
+
           //* Plant name at the bottom
           Positioned(
             left: 8,
             right: 8,
             bottom: 8,
             child: Text(
-              plant.isDiscovered ? plant.name : '???',
+              plant.isDiscovered ? plant.name : '¿?',
               textAlign: TextAlign.center,
               maxLines: 1,
               overflow: TextOverflow.ellipsis,
@@ -214,6 +219,52 @@ class _PlantGridMissingImagePlaceholder extends StatelessWidget {
       color: Colors.grey.shade300,
       alignment: Alignment.center,
       child: const Icon(Icons.local_florist, size: 48, color: Colors.white70),
+    );
+  }
+}
+
+class _LockedPlantOverlay extends StatelessWidget {
+  const _LockedPlantOverlay();
+
+  @override
+  Widget build(BuildContext context) {
+    return Center(
+      child: Stack(
+        alignment: Alignment.center,
+        children: [
+          ImageFiltered(
+            imageFilter: ImageFilter.blur(sigmaX: 6, sigmaY: 6),
+            child: Icon(
+              Icons.lock_rounded,
+              size: 40,
+              color: Colors.black.withValues(alpha: 0.34),
+            ),
+          ),
+          Transform.translate(
+            offset: const Offset(0, 3),
+            child: ImageFiltered(
+              imageFilter: ImageFilter.blur(sigmaX: 3.5, sigmaY: 3.5),
+              child: Icon(
+                Icons.lock_rounded,
+                size: 38,
+                color: Colors.black.withValues(alpha: 0.5),
+              ),
+            ),
+          ),
+          Icon(
+            Icons.lock_rounded,
+            size: 36,
+            color: Colors.grey.shade300,
+            shadows: [
+              Shadow(
+                color: Colors.black.withValues(alpha: 0.35),
+                blurRadius: 2,
+                offset: Offset(0, 1),
+              ),
+            ],
+          ),
+        ],
+      ),
     );
   }
 }

@@ -5,6 +5,8 @@ import '../../../../core/errors/failures.dart';
 import '../../../../core/usecases/usecase.dart';
 import '../../../plant_details/domain/repositories/plant_details_repository.dart';
 
+// TODO: Refactor Use Case to Clean Architecture standards, separating concerns and improving testability.
+
 class ValidateQrCode implements Usecase<String, Params> {
   final PlantDetailsRepository repository;
 

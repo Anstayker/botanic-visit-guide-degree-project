@@ -34,16 +34,36 @@ class EncyUserProgressCard extends StatelessWidget {
                 top: 0,
                 child: SizedBox(
                   height: 220,
-                  child: ClipRect(
-                    child: Transform.scale(
-                      scale: 1.25,
-                      alignment: Alignment.topCenter,
-                      child: Image.asset(
-                        'assets/images/wallpaper1.jpg',
-                        fit: BoxFit.cover,
-                        width: double.infinity,
+                  child: Stack(
+                    fit: StackFit.expand,
+                    children: [
+                      ClipRect(
+                        child: Transform.scale(
+                          scale: 1.25,
+                          alignment: Alignment.topCenter,
+                          child: Image.asset(
+                            'assets/images/wallpaper1.jpg',
+                            fit: BoxFit.cover,
+                            width: double.infinity,
+                          ),
+                        ),
                       ),
-                    ),
+                      Positioned.fill(
+                        child: DecoratedBox(
+                          decoration: BoxDecoration(
+                            gradient: LinearGradient(
+                              begin: Alignment.topCenter,
+                              end: Alignment.bottomCenter,
+                              stops: const [0.62, 1.0],
+                              colors: [
+                                Colors.transparent,
+                                Colors.black.withValues(alpha: 0.25),
+                              ],
+                            ),
+                          ),
+                        ),
+                      ),
+                    ],
                   ),
                 ),
               ),
@@ -125,14 +145,18 @@ class EncyUserProgressCard extends StatelessWidget {
   Text _completionPercentage(int progressPercentage) {
     return Text(
       '$progressPercentage% completado',
-      style: const TextStyle(color: Colors.grey, fontSize: 12),
+      style: TextStyle(color: Colors.grey[700], fontSize: 12),
     );
   }
 
   Text _userLevel(int levelNumber, String levelTitle) {
     return Text(
       'Nivel $levelNumber: $levelTitle',
-      style: TextStyle(color: Colors.grey[600], fontSize: 12),
+      style: TextStyle(
+        color: Colors.grey[700],
+        fontSize: 12,
+        fontWeight: FontWeight.w500,
+      ),
     );
   }
 

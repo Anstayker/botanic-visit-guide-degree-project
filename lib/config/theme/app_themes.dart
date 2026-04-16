@@ -1,14 +1,35 @@
 import 'package:flutter/material.dart';
+import 'package:google_fonts/google_fonts.dart';
+
+TextTheme _appTextTheme(TextTheme base) {
+  final lexendBase = GoogleFonts.lexendTextTheme(base);
+
+  return lexendBase.copyWith(
+    displayLarge: GoogleFonts.montserrat(textStyle: lexendBase.displayLarge),
+    displayMedium: GoogleFonts.montserrat(textStyle: lexendBase.displayMedium),
+    displaySmall: GoogleFonts.montserrat(textStyle: lexendBase.displaySmall),
+    headlineLarge: GoogleFonts.montserrat(textStyle: lexendBase.headlineLarge),
+    headlineMedium: GoogleFonts.montserrat(
+      textStyle: lexendBase.headlineMedium,
+    ),
+    headlineSmall: GoogleFonts.montserrat(textStyle: lexendBase.headlineSmall),
+    titleLarge: GoogleFonts.montserrat(textStyle: lexendBase.titleLarge),
+    titleMedium: GoogleFonts.montserrat(textStyle: lexendBase.titleMedium),
+    titleSmall: GoogleFonts.montserrat(textStyle: lexendBase.titleSmall),
+  );
+}
 
 ThemeData defaultTheme() {
   final colorScheme = ColorScheme.fromSeed(
     seedColor: Colors.green,
     brightness: Brightness.light,
   );
+  final textTheme = _appTextTheme(ThemeData.light().textTheme);
 
   return ThemeData(
     useMaterial3: true,
     colorScheme: colorScheme,
+    textTheme: textTheme,
     scaffoldBackgroundColor: colorScheme.surface,
     visualDensity: VisualDensity.adaptivePlatformDensity,
 
@@ -45,9 +66,12 @@ ThemeData floraTheme() {
     brightness: Brightness.light,
     surface: cream,
   );
+  final textTheme = _appTextTheme(ThemeData.light().textTheme);
+
   return ThemeData(
     useMaterial3: true,
     colorScheme: colorScheme,
+    textTheme: textTheme,
     scaffoldBackgroundColor: colorScheme.surface,
     visualDensity: VisualDensity.adaptivePlatformDensity,
 
@@ -93,9 +117,9 @@ ThemeData floraTheme() {
       }),
       labelStyle: WidgetStateTextStyle.resolveWith((states) {
         if (states.contains(WidgetState.selected)) {
-          return const TextStyle(color: cream, fontWeight: FontWeight.bold);
+          return GoogleFonts.lexend(color: cream, fontWeight: FontWeight.bold);
         }
-        return const TextStyle(
+        return GoogleFonts.lexend(
           color: terracotta,
           fontWeight: FontWeight.normal,
         );
