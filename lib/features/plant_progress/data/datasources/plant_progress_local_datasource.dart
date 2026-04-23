@@ -1,6 +1,7 @@
 import 'package:hive/hive.dart';
 
 import '../../../../core/data/models/plant_model.dart';
+import '../../../../core/errors/exceptions.dart';
 import '../../domain/entities/plant_discovery_progress.dart';
 
 abstract class PlantProgressLocalDataSource {
@@ -15,17 +16,21 @@ class PlantProgressLocalDatasource implements PlantProgressLocalDataSource {
   PlantProgressLocalDatasource({required this.plantBox});
 
   @override
-  Future<void> discoverPlant(String plantId) {
+  Future<void> discoverPlant(String plantId) async {
     try {
       final plant = plantBox.get(plantId);
       if (plant == null) {
-        throw Exception('Plant not found');
+        throw const PlantNotFoundException();
       }
 
       final updatedPlant = plant.copyWith(isDiscovered: true);
-      return plantBox.put(plantId, updatedPlant);
+      await plantBox.put(plantId, updatedPlant);
+    } on PlantNotFoundException {
+      rethrow;
+    } on HiveError catch (e) {
+      throw CacheException('Failed to unlock plant in cache: $e');
     } catch (e) {
-      throw Exception('Failed to unlock plant: $e');
+      throw UnknownException('Failed to unlock plant: $e');
     }
   }
 
@@ -46,29 +51,39 @@ class PlantProgressLocalDatasource implements PlantProgressLocalDataSource {
       if (updates.isNotEmpty) {
         await plantBox.putAll(updates);
       }
+    } on HiveError catch (e) {
+      throw CacheException('Failed to update all discovery states: $e');
     } catch (e) {
-      throw Exception('Failed to update all discovery states: $e');
+      throw UnknownException('Failed to update all discovery states: $e');
     }
   }
 
   @override
   Stream<PlantDiscoveryProgress> watchUserProgress() async* {
-    PlantDiscoveryProgress mapProgress() {
-      final totalPlants = plantBox.length;
-      final discoveredPlants = plantBox.values
-          .where((plant) => plant.isDiscovered)
-          .length;
+    try {
+      PlantDiscoveryProgress mapProgress() {
+        final totalPlants = plantBox.length;
+        final discoveredPlants = plantBox.values
+            .where((plant) => plant.isDiscovered)
+            .length;
 
-      return PlantDiscoveryProgress(
-        totalPlants: totalPlants,
-        discoveredPlants: discoveredPlants,
-      );
-    }
+        return PlantDiscoveryProgress(
+          totalPlants: totalPlants,
+          discoveredPlants: discoveredPlants,
+        );
+      }
 
-    yield mapProgress();
-
-    await for (final _ in plantBox.watch()) {
       yield mapProgress();
+
+      await for (final _ in plantBox.watch()) {
+        yield mapProgress();
+      }
+    } on HiveError catch (e) {
+      throw CacheException('Failed to watch plant discovery progress: $e');
+    } on TypeError catch (e) {
+      throw DataParsingException('Invalid plant progress payload: $e');
+    } catch (e) {
+      throw UnknownException('Failed to watch plant discovery progress: $e');
     }
   }
 }

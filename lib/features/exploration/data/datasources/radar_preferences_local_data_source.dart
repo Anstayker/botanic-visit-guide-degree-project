@@ -1,5 +1,7 @@
 import 'package:shared_preferences/shared_preferences.dart';
 
+import '../../../../core/errors/exceptions.dart';
+
 abstract class RadarPreferencesLocalDataSource {
   Future<bool> isHeadingRotationEnabled();
   Future<void> setHeadingRotationEnabled(bool enabled);
@@ -21,22 +23,40 @@ class RadarPreferencesLocalDataSourceImpl
 
   @override
   Future<bool> isHeadingRotationEnabled() async {
-    return sharedPreferences.getBool(_headingRotationEnabledKey) ?? false;
+    try {
+      return sharedPreferences.getBool(_headingRotationEnabledKey) ?? false;
+    } catch (e) {
+      throw CacheException('Failed to read radar rotation preference: $e');
+    }
   }
 
   @override
   Future<void> setHeadingRotationEnabled(bool enabled) async {
-    await sharedPreferences.setBool(_headingRotationEnabledKey, enabled);
+    try {
+      await sharedPreferences.setBool(_headingRotationEnabledKey, enabled);
+    } catch (e) {
+      throw CacheException('Failed to store radar rotation preference: $e');
+    }
   }
 
   @override
   Future<int> getMapTileCacheMaxSizeBytes() async {
-    return sharedPreferences.getInt(_mapTileCacheMaxSizeBytesKey) ??
-        _defaultMapTileCacheMaxSizeBytes;
+    try {
+      return sharedPreferences.getInt(_mapTileCacheMaxSizeBytesKey) ??
+          _defaultMapTileCacheMaxSizeBytes;
+    } catch (e) {
+      throw CacheException('Failed to read map tile cache size preference: $e');
+    }
   }
 
   @override
   Future<void> setMapTileCacheMaxSizeBytes(int bytes) async {
-    await sharedPreferences.setInt(_mapTileCacheMaxSizeBytesKey, bytes);
+    try {
+      await sharedPreferences.setInt(_mapTileCacheMaxSizeBytesKey, bytes);
+    } catch (e) {
+      throw CacheException(
+        'Failed to store map tile cache size preference: $e',
+      );
+    }
   }
 }

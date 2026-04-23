@@ -26,8 +26,12 @@ class EncyRemoteDataSourceImpl implements EncyRemoteDataSource {
       if (!snapshot.exists) return null;
 
       return _readInt(snapshot.data() ?? <String, dynamic>{}, 'version');
-    } catch (_) {
-      throw UnknownException();
+    } on FirebaseException catch (e) {
+      throw RemoteDataException(
+        'Firestore error while reading metadata: ${e.code} - ${e.message}',
+      );
+    } catch (e) {
+      throw UnknownException('Unexpected metadata read error: $e');
     }
   }
 
@@ -80,8 +84,14 @@ class EncyRemoteDataSourceImpl implements EncyRemoteDataSource {
             );
           })
           .toList(growable: false);
-    } catch (_) {
-      throw UnknownException();
+    } on FirebaseException catch (e) {
+      throw RemoteDataException(
+        'Firestore error while fetching plants: ${e.code} - ${e.message}',
+      );
+    } on TypeError catch (e) {
+      throw DataParsingException('Invalid plant payload shape: $e');
+    } catch (e) {
+      throw UnknownException('Unexpected plants fetch error: $e');
     }
   }
 

@@ -1,5 +1,6 @@
 import 'package:dartz/dartz.dart';
 
+import '../../../../core/errors/exceptions.dart';
 import '../../../../core/errors/failures.dart';
 import '../../domain/entities/plant_discovery_progress.dart';
 import '../../domain/repositories/plant_progress_repository.dart';
@@ -15,8 +16,8 @@ class PlantProgressRepositoryImpl implements PlantProgressRepository {
     try {
       await localDataSource.discoverPlant(plantId);
       return right(null);
-    } catch (e) {
-      return left(UnknownFailure());
+    } catch (exception) {
+      return left(_mapExceptionToFailure(exception));
     }
   }
 
@@ -27,8 +28,8 @@ class PlantProgressRepositoryImpl implements PlantProgressRepository {
     try {
       await localDataSource.setAllPlantsDiscovered(isDiscovered);
       return right(null);
-    } catch (e) {
-      return left(UnknownFailure());
+    } catch (exception) {
+      return left(_mapExceptionToFailure(exception));
     }
   }
 
@@ -38,8 +39,28 @@ class PlantProgressRepositoryImpl implements PlantProgressRepository {
       await for (final progress in localDataSource.watchUserProgress()) {
         yield right(progress);
       }
-    } catch (e) {
-      yield left(UnknownFailure());
+    } catch (exception) {
+      yield left(_mapExceptionToFailure(exception));
     }
+  }
+
+  Failure _mapExceptionToFailure(Object exception) {
+    if (exception is PlantNotFoundException) {
+      return PlantNotFoundFailure(exception.message);
+    }
+
+    if (exception is CacheException) {
+      return CacheFailure(exception.message);
+    }
+
+    if (exception is DataParsingException) {
+      return DataParsingFailure(exception.message);
+    }
+
+    if (exception is UnknownException) {
+      return UnknownFailure(exception.message);
+    }
+
+    return UnknownFailure('Unexpected error type: $exception');
   }
 }

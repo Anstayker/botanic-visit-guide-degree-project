@@ -1,6 +1,7 @@
 import 'package:dartz/dartz.dart';
 import 'package:rxdart/rxdart.dart';
 
+import '../../../../core/errors/exceptions.dart';
 import '../../../../core/errors/failures.dart';
 import '../../../../core/entities/user_position.dart';
 import '../../../../core/services/location/location_service.dart';
@@ -22,58 +23,65 @@ class ExplorationRepositoryImpl extends ExplorationRepository {
 
   @override
   Stream<Either<Failure, List<ExplorationPlant>>> watchNearbyPlants() {
-    return Rx.combineLatest2(
-      locationService.watchUserPosition(),
-      localDataSource.getExplorationData(),
-      (
-        Either<Failure, UserPosition> positionResult,
-        List<ExplorationPlant> plants,
-      ) {
-        return positionResult.fold((failure) => Left(failure), (userPos) {
-          final nearbyPlants =
-              plants
-                  .map((explorationPlant) {
-                    final plantLatitude =
-                        explorationPlant.plant.location.latitude;
-                    final plantLongitude =
-                        explorationPlant.plant.location.longitude;
+    return Rx.combineLatest2<
+          Either<Failure, UserPosition>,
+          List<ExplorationPlant>,
+          Either<Failure, List<ExplorationPlant>>
+        >(
+          locationService.watchUserPosition(),
+          localDataSource.getExplorationData(),
+          (
+            Either<Failure, UserPosition> positionResult,
+            List<ExplorationPlant> plants,
+          ) {
+            return positionResult.fold((failure) => Left(failure), (userPos) {
+              final nearbyPlants =
+                  plants
+                      .map((explorationPlant) {
+                        final plantLatitude =
+                            explorationPlant.plant.location.latitude;
+                        final plantLongitude =
+                            explorationPlant.plant.location.longitude;
 
-                    final distance = locationService.distanceBetween(
-                      startLatitude: userPos.latitude,
-                      startLongitude: userPos.longitude,
-                      endLatitude: plantLatitude,
-                      endLongitude: plantLongitude,
-                    );
+                        final distance = locationService.distanceBetween(
+                          startLatitude: userPos.latitude,
+                          startLongitude: userPos.longitude,
+                          endLatitude: plantLatitude,
+                          endLongitude: plantLongitude,
+                        );
 
-                    final absoluteBearing = locationService.bearingBetween(
-                      startLatitude: userPos.latitude,
-                      startLongitude: userPos.longitude,
-                      endLatitude: plantLatitude,
-                      endLongitude: plantLongitude,
-                    );
+                        final absoluteBearing = locationService.bearingBetween(
+                          startLatitude: userPos.latitude,
+                          startLongitude: userPos.longitude,
+                          endLatitude: plantLatitude,
+                          endLongitude: plantLongitude,
+                        );
 
-                    final relativeBearing = _toRelativeBearing(
-                      absoluteBearing: absoluteBearing,
-                      userHeading: userPos.heading,
-                    );
+                        final relativeBearing = _toRelativeBearing(
+                          absoluteBearing: absoluteBearing,
+                          userHeading: userPos.heading,
+                        );
 
-                    return ExplorationPlant(
-                      plant: explorationPlant.plant,
-                      distance: distance,
-                      bearing: relativeBearing,
-                      isVisibleInRadar: _isVisibleInRadar(
-                        distance: distance,
-                        relativeBearing: relativeBearing,
-                      ),
-                    );
-                  })
-                  .where((plant) => plant.distance <= _maxRadarDistanceMeters)
-                  .toList()
-                ..sort((a, b) => a.distance.compareTo(b.distance));
-          return Right(nearbyPlants);
-        });
-      },
-    );
+                        return ExplorationPlant(
+                          plant: explorationPlant.plant,
+                          distance: distance,
+                          bearing: relativeBearing,
+                          isVisibleInRadar: _isVisibleInRadar(
+                            distance: distance,
+                            relativeBearing: relativeBearing,
+                          ),
+                        );
+                      })
+                      .where(
+                        (plant) => plant.distance <= _maxRadarDistanceMeters,
+                      )
+                      .toList()
+                    ..sort((a, b) => a.distance.compareTo(b.distance));
+              return Right(nearbyPlants);
+            });
+          },
+        )
+        .onErrorReturnWith((error, _) => Left(_mapExceptionToFailure(error)));
   }
 
   double _toRelativeBearing({
@@ -104,6 +112,22 @@ class ExplorationRepositoryImpl extends ExplorationRepository {
         : relativeBearing;
 
     return angleFromForward <= halfFov;
+  }
+
+  Failure _mapExceptionToFailure(Object exception) {
+    if (exception is CacheException) {
+      return CacheFailure(exception.message);
+    }
+
+    if (exception is DataParsingException) {
+      return DataParsingFailure(exception.message);
+    }
+
+    if (exception is UnknownException) {
+      return UnknownFailure(exception.message);
+    }
+
+    return UnknownFailure('Unable to stream nearby plants: $exception');
   }
 
   @override

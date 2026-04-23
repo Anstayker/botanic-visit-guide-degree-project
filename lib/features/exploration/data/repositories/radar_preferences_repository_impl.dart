@@ -1,5 +1,6 @@
 import 'package:dartz/dartz.dart';
 
+import '../../../../core/errors/exceptions.dart';
 import '../../../../core/errors/failures.dart';
 import '../../domain/repositories/radar_preferences_repository.dart';
 import '../datasources/radar_preferences_local_data_source.dart';
@@ -14,10 +15,8 @@ class RadarPreferencesRepositoryImpl implements RadarPreferencesRepository {
     try {
       final enabled = await localDataSource.isHeadingRotationEnabled();
       return Right(enabled);
-    } catch (error) {
-      return Left(
-        UnknownFailure('Unable to read radar rotation preference: $error'),
-      );
+    } catch (exception) {
+      return Left(_mapExceptionToFailure(exception));
     }
   }
 
@@ -26,10 +25,8 @@ class RadarPreferencesRepositoryImpl implements RadarPreferencesRepository {
     try {
       await localDataSource.setHeadingRotationEnabled(enabled);
       return Right(enabled);
-    } catch (error) {
-      return Left(
-        UnknownFailure('Unable to store radar rotation preference: $error'),
-      );
+    } catch (exception) {
+      return Left(_mapExceptionToFailure(exception));
     }
   }
 
@@ -38,10 +35,8 @@ class RadarPreferencesRepositoryImpl implements RadarPreferencesRepository {
     try {
       final bytes = await localDataSource.getMapTileCacheMaxSizeBytes();
       return Right(bytes);
-    } catch (error) {
-      return Left(
-        UnknownFailure('Unable to read map tile cache size preference: $error'),
-      );
+    } catch (exception) {
+      return Left(_mapExceptionToFailure(exception));
     }
   }
 
@@ -50,12 +45,20 @@ class RadarPreferencesRepositoryImpl implements RadarPreferencesRepository {
     try {
       await localDataSource.setMapTileCacheMaxSizeBytes(bytes);
       return Right(bytes);
-    } catch (error) {
-      return Left(
-        UnknownFailure(
-          'Unable to store map tile cache size preference: $error',
-        ),
-      );
+    } catch (exception) {
+      return Left(_mapExceptionToFailure(exception));
     }
+  }
+
+  Failure _mapExceptionToFailure(Object exception) {
+    if (exception is CacheException) {
+      return CacheFailure(exception.message);
+    }
+
+    if (exception is UnknownException) {
+      return UnknownFailure(exception.message);
+    }
+
+    return UnknownFailure('Radar preferences unexpected error: $exception');
   }
 }

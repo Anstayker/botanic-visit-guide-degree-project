@@ -16,6 +16,27 @@ class UnknownFailure extends Failure {
   String toString() => 'UnknownFailure: $message';
 }
 
+class RemoteFailure extends Failure {
+  const RemoteFailure([super.message = 'A remote data error occurred.']);
+
+  @override
+  String toString() => 'RemoteFailure: $message';
+}
+
+class CacheFailure extends Failure {
+  const CacheFailure([super.message = 'A local cache error occurred.']);
+
+  @override
+  String toString() => 'CacheFailure: $message';
+}
+
+class DataParsingFailure extends Failure {
+  const DataParsingFailure([super.message = 'Failed to parse data.']);
+
+  @override
+  String toString() => 'DataParsingFailure: $message';
+}
+
 class InvalidQrCodeFailure extends Failure {
   const InvalidQrCodeFailure([super.message = 'El QR escaneado no es valido.']);
 

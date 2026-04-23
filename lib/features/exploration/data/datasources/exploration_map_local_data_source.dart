@@ -3,6 +3,7 @@ import 'dart:math' as math;
 import 'package:hive/hive.dart';
 
 import '../../../../core/data/models/plant_model.dart';
+import '../../../../core/errors/exceptions.dart';
 import '../../domain/entities/exploration_map_region.dart';
 
 abstract class ExplorationMapLocalDataSource {
@@ -24,51 +25,61 @@ class ExplorationMapLocalDataSourceImpl
 
   @override
   Future<List<ExplorationMapRegion>> getRecommendedMapRegions() async {
-    final locations = plantBox.values
-        .map((plant) => plant.plantLocation)
-        .toList(growable: false);
+    try {
+      final locations = plantBox.values
+          .map((plant) => plant.plantLocation)
+          .toList(growable: false);
 
-    if (locations.isEmpty) {
-      return [_buildFallbackRegion()];
+      if (locations.isEmpty) {
+        return [_buildFallbackRegion()];
+      }
+
+      final latitudes = locations.map((location) => location.latitude).toList();
+      final longitudes = locations
+          .map((location) => location.longitude)
+          .toList();
+
+      final minLatitude = latitudes.reduce(math.min);
+      final maxLatitude = latitudes.reduce(math.max);
+      final minLongitude = longitudes.reduce(math.min);
+      final maxLongitude = longitudes.reduce(math.max);
+
+      final latitudeSpan = maxLatitude - minLatitude;
+      final longitudeSpan = maxLongitude - minLongitude;
+      final latitudePadding = math.max(
+        latitudeSpan * _paddingFactor,
+        _minimumPaddingDegrees,
+      );
+      final longitudePadding = math.max(
+        longitudeSpan * _paddingFactor,
+        _minimumPaddingDegrees,
+      );
+      final longestSpan = math.max(latitudeSpan, longitudeSpan);
+
+      return [
+        ExplorationMapRegion(
+          id: 'botanical_garden_primary',
+          name: 'Jardín Botánico',
+          centerLatitude: (minLatitude + maxLatitude) / 2,
+          centerLongitude: (minLongitude + maxLongitude) / 2,
+          southWestLatitude: minLatitude - latitudePadding,
+          southWestLongitude: minLongitude - longitudePadding,
+          northEastLatitude: maxLatitude + latitudePadding,
+          northEastLongitude: maxLongitude + longitudePadding,
+          recommendedZoom: _recommendedZoomForSpan(longestSpan),
+          minimumZoom: _minimumZoom,
+          maximumZoom: _maximumZoom,
+          shouldPrecache: true,
+          priority: 100,
+        ),
+      ];
+    } on HiveError catch (e) {
+      throw CacheException('Failed to build recommended map regions: $e');
+    } on TypeError catch (e) {
+      throw DataParsingException('Invalid plant location payload: $e');
+    } catch (e) {
+      throw UnknownException('Unexpected map region build error: $e');
     }
-
-    final latitudes = locations.map((location) => location.latitude).toList();
-    final longitudes = locations.map((location) => location.longitude).toList();
-
-    final minLatitude = latitudes.reduce(math.min);
-    final maxLatitude = latitudes.reduce(math.max);
-    final minLongitude = longitudes.reduce(math.min);
-    final maxLongitude = longitudes.reduce(math.max);
-
-    final latitudeSpan = maxLatitude - minLatitude;
-    final longitudeSpan = maxLongitude - minLongitude;
-    final latitudePadding = math.max(
-      latitudeSpan * _paddingFactor,
-      _minimumPaddingDegrees,
-    );
-    final longitudePadding = math.max(
-      longitudeSpan * _paddingFactor,
-      _minimumPaddingDegrees,
-    );
-    final longestSpan = math.max(latitudeSpan, longitudeSpan);
-
-    return [
-      ExplorationMapRegion(
-        id: 'botanical_garden_primary',
-        name: 'Jardín Botánico',
-        centerLatitude: (minLatitude + maxLatitude) / 2,
-        centerLongitude: (minLongitude + maxLongitude) / 2,
-        southWestLatitude: minLatitude - latitudePadding,
-        southWestLongitude: minLongitude - longitudePadding,
-        northEastLatitude: maxLatitude + latitudePadding,
-        northEastLongitude: maxLongitude + longitudePadding,
-        recommendedZoom: _recommendedZoomForSpan(longestSpan),
-        minimumZoom: _minimumZoom,
-        maximumZoom: _maximumZoom,
-        shouldPrecache: true,
-        priority: 100,
-      ),
-    ];
   }
 
   ExplorationMapRegion _buildFallbackRegion() {

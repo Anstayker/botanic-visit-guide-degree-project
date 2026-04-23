@@ -61,8 +61,12 @@ class EncyLocalDataSourceImpl implements EncyLocalDataSource {
       await for (final _ in plantBox.watch()) {
         yield applyFilters(plantBox.values.toList(growable: false));
       }
+    } on HiveError catch (e) {
+      throw CacheException('Local database error while watching plants: $e');
+    } on TypeError catch (e) {
+      throw DataParsingException('Invalid local plant payload: $e');
     } catch (e) {
-      throw UnknownException();
+      throw UnknownException('Unexpected local datasource error: $e');
     }
   }
 }

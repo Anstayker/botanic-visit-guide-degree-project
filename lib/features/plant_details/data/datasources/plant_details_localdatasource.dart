@@ -2,6 +2,7 @@ import 'package:hive_flutter/adapters.dart';
 
 import '../../../../core/data/models/plant_model.dart';
 import '../../../../core/entities/plant.dart';
+import '../../../../core/errors/exceptions.dart';
 
 abstract class PlantDetailsLocalDatasource {
   Future<Plant> getPlantDetailsData(String plantId);
@@ -13,16 +14,20 @@ class PlantDetailsLocalDatasourceImpl implements PlantDetailsLocalDatasource {
   PlantDetailsLocalDatasourceImpl({required this.plantBox});
 
   @override
-  Future<Plant> getPlantDetailsData(String plantId) {
+  Future<Plant> getPlantDetailsData(String plantId) async {
     try {
       final plant = plantBox.get(plantId);
       if (plant != null) {
-        return Future.value(plant.toEntity());
+        return plant.toEntity();
       } else {
-        throw Exception('Plant not found');
+        throw const PlantNotFoundException();
       }
+    } on PlantNotFoundException {
+      rethrow;
+    } on HiveError catch (e) {
+      throw CacheException('Failed to read plant details from cache: $e');
     } catch (e) {
-      throw Exception('Failed to retrieve plant details: $e');
+      throw UnknownException('Failed to retrieve plant details: $e');
     }
   }
 }
