@@ -38,6 +38,8 @@ dependencies:
   # Firebase
   firebase_core: ^4.6.0
   cloud_firestore: ^6.2.0
+  # Internet access check
+  internet_connection_checker_plus: ^2.8.0
   # QR Scanner
   mobile_scanner: ^7.2.0
   # External links

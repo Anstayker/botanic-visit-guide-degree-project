@@ -2,6 +2,7 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:get_it/get_it.dart' show GetIt;
 import 'package:hive_flutter/hive_flutter.dart';
+import 'package:internet_connection_checker_plus/internet_connection_checker_plus.dart';
 import 'package:shared_preferences/shared_preferences.dart'
     show SharedPreferences;
 
@@ -11,6 +12,7 @@ import 'core/data/models/plant_model.dart';
 import 'core/services/location/compass_wrapper.dart';
 import 'core/services/location/geolocator_wrapper.dart';
 import 'core/services/location/location_service.dart';
+import 'core/services/network/network_info.dart';
 import 'features/encyclopedia/data/datasources/ency_local_datasource.dart';
 import 'features/encyclopedia/data/datasources/ency_remote_datasource.dart';
 import 'features/encyclopedia/data/repositories/ency_repository_impl.dart';
@@ -53,6 +55,9 @@ Future<void> init() async {
   sl.registerLazySingleton<LocationService>(
     () => LocationServiceImpl(geolocator: sl(), compass: sl()),
   );
+  sl.registerLazySingleton<NetworkInfo>(
+    () => NetworkInfoImpl(internetConnection: sl<InternetConnection>()),
+  );
 
   sl.registerLazySingleton<PlantLocalDataSource>(
     () => PlantLocalDataSourceImpl(plantBox: sl<Box<PlantModel>>()),
@@ -71,6 +76,7 @@ Future<void> init() async {
   sl.registerLazySingleton<EncyPlantsSyncService>(
     () => EncyPlantsSyncServiceImpl(
       remoteDataSource: sl<EncyRemoteDataSource>(),
+      networkInfo: sl<NetworkInfo>(),
       plantBox: sl<Box<PlantModel>>(),
       sharedPreferences: sl<SharedPreferences>(),
     ),
@@ -195,6 +201,9 @@ Future<void> init() async {
   sl.registerLazySingleton<FirebaseApp>(() => firebaseApp);
   sl.registerLazySingleton<FirebaseFirestore>(
     () => FirebaseFirestore.instanceFor(app: firebaseApp),
+  );
+  sl.registerLazySingleton<InternetConnection>(
+    InternetConnection.createInstance,
   );
 
   final sharedPreferences = await SharedPreferences.getInstance();
