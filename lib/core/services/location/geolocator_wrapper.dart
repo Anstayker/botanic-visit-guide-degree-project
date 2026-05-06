@@ -9,6 +9,10 @@ class GeolocatorWrapper {
   Future<LocationPermission> requestPermission() =>
       Geolocator.requestPermission();
 
+  Future<Position> getCurrentPosition({LocationSettings? locationSettings}) {
+    return Geolocator.getCurrentPosition(locationSettings: locationSettings);
+  }
+
   Stream<Position> getPositionStream({LocationSettings? locationSettings}) {
     return Geolocator.getPositionStream(locationSettings: locationSettings);
   }

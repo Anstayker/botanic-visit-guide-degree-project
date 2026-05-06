@@ -4,6 +4,9 @@ import 'package:mobile_scanner/mobile_scanner.dart';
 
 import '../../../../injection_container.dart';
 import '../cubit/qr_scanner_cubit.dart';
+import '../widgets/camera_view.dart';
+import '../widgets/scanner_overlay.dart';
+import '../widgets/controls_panel.dart';
 
 class QRScanner extends StatefulWidget {
   const QRScanner({super.key});
@@ -54,235 +57,64 @@ class _QRScannerState extends State<QRScanner> {
           }
         },
         child: Scaffold(
-          appBar: AppBar(title: const Text('Escaner QR')),
+          appBar: AppBar(
+            title: const Text(
+              'Escaner QR',
+              style: TextStyle(fontSize: 20, fontWeight: FontWeight.w600),
+            ),
+            actions: [
+              IconButton(
+                onPressed: () => _showHelpSheet(context),
+                icon: const Icon(Icons.help_outline, size: 30, weight: 900),
+                style: IconButton.styleFrom(
+                  backgroundColor: Colors.transparent,
+                  padding: const EdgeInsets.all(12),
+                  minimumSize: const Size(36, 36),
+                  tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+                ),
+                tooltip: 'Ayuda',
+              ),
+            ],
+          ),
           body: Stack(
             fit: StackFit.expand,
             children: [
-              MobileScanner(
+              CameraView(
                 controller: _cameraController,
-                onDetect: (capture) {
-                  final barcode = capture.barcodes.firstWhere(
-                    (value) =>
-                        value.rawValue != null && value.rawValue!.isNotEmpty,
-                    orElse: () => const Barcode(rawValue: null),
-                  );
-
-                  final rawValue = barcode.rawValue;
-                  if (rawValue == null || rawValue.isEmpty) {
-                    return;
-                  }
-
-                  context.read<QRScannerCubit>().onQrDetected(rawValue);
-                },
+                onQrDetected: (raw) =>
+                    context.read<QRScannerCubit>().onQrDetected(raw),
               ),
-              const _ScannerOverlay(),
-              Align(
-                alignment: Alignment.bottomCenter,
-                child: SafeArea(
-                  minimum: const EdgeInsets.all(16),
-                  child: BlocBuilder<QRScannerCubit, QrScannerState>(
-                    builder: (context, state) {
-                      final isSuccess = state.status == QrScannerStatus.success;
-                      return Column(
-                        mainAxisSize: MainAxisSize.min,
-                        children: [
-                          if (state.status == QrScannerStatus.validating)
-                            const _StatusBanner(
-                              icon: Icons.hourglass_bottom,
-                              title: 'Validando QR',
-                              subtitle: 'Comprobando el codigo escaneado.',
-                            )
-                          else if (isSuccess)
-                            _StatusBanner(
-                              icon: Icons.verified,
-                              title: 'Planta desbloqueada',
-                              subtitle: state.message ?? '',
-                            )
-                          else
-                            const _StatusBanner(
-                              icon: Icons.qr_code_scanner,
-                              title: 'Apunta al QR',
-                              subtitle:
-                                  'Coloca el codigo dentro del marco para desbloquear la planta.',
-                            ),
-                          const SizedBox(height: 12),
-                          if (isSuccess)
-                            FilledButton.icon(
-                              onPressed: () async {
-                                await context.read<QRScannerCubit>().reset();
-                                await _cameraController.start();
-                              },
-                              icon: const Icon(Icons.refresh),
-                              label: const Text('Escanear otro QR'),
-                            )
-                          else
-                            FilledButton.icon(
-                              onPressed: () async {
-                                await _cameraController.start();
-                              },
-                              icon: const Icon(Icons.camera_alt_outlined),
-                              label: const Text('Reanudar camara'),
-                            ),
-                        ],
-                      );
-                    },
-                  ),
-                ),
-              ),
+              const ScannerOverlay(),
+              ControlsPanel(controller: _cameraController),
             ],
           ),
         ),
       ),
     );
   }
-}
 
-class _ScannerOverlay extends StatelessWidget {
-  const _ScannerOverlay();
-
-  @override
-  Widget build(BuildContext context) {
-    return IgnorePointer(
-      child: Container(
-        decoration: BoxDecoration(
-          gradient: LinearGradient(
-            begin: Alignment.topCenter,
-            end: Alignment.bottomCenter,
-            colors: [
-              Colors.black.withValues(alpha: 0.25),
-              Colors.transparent,
-              Colors.black.withValues(alpha: 0.35),
-            ],
-            stops: const [0.0, 0.45, 1.0],
-          ),
-        ),
-        child: Center(
-          child: Container(
-            width: 240,
-            height: 240,
-            decoration: BoxDecoration(
-              borderRadius: BorderRadius.circular(28),
-              border: Border.all(color: Colors.white, width: 3),
-              boxShadow: [
-                BoxShadow(
-                  color: Colors.black.withValues(alpha: 0.18),
-                  blurRadius: 24,
-                  spreadRadius: 2,
-                ),
-              ],
-            ),
-            child: Stack(
-              children: const [
-                Positioned(
-                  top: 16,
-                  left: 16,
-                  child: _CornerMarker(alignment: Alignment.topLeft),
-                ),
-                Positioned(
-                  top: 16,
-                  right: 16,
-                  child: _CornerMarker(alignment: Alignment.topRight),
-                ),
-                Positioned(
-                  bottom: 16,
-                  left: 16,
-                  child: _CornerMarker(alignment: Alignment.bottomLeft),
-                ),
-                Positioned(
-                  bottom: 16,
-                  right: 16,
-                  child: _CornerMarker(alignment: Alignment.bottomRight),
-                ),
-              ],
-            ),
-          ),
-        ),
-      ),
-    );
-  }
-}
-
-class _CornerMarker extends StatelessWidget {
-  const _CornerMarker({required this.alignment});
-
-  final Alignment alignment;
-
-  @override
-  Widget build(BuildContext context) {
-    return SizedBox(
-      width: 24,
-      height: 24,
-      child: DecoratedBox(
-        decoration: BoxDecoration(
-          border: Border(
-            top: alignment.y < 0
-                ? const BorderSide(color: Colors.white, width: 4)
-                : BorderSide.none,
-            bottom: alignment.y > 0
-                ? const BorderSide(color: Colors.white, width: 4)
-                : BorderSide.none,
-            left: alignment.x < 0
-                ? const BorderSide(color: Colors.white, width: 4)
-                : BorderSide.none,
-            right: alignment.x > 0
-                ? const BorderSide(color: Colors.white, width: 4)
-                : BorderSide.none,
-          ),
-        ),
-      ),
-    );
-  }
-}
-
-class _StatusBanner extends StatelessWidget {
-  const _StatusBanner({
-    required this.icon,
-    required this.title,
-    required this.subtitle,
-  });
-
-  final IconData icon;
-  final String title;
-  final String subtitle;
-
-  @override
-  Widget build(BuildContext context) {
-    return Container(
-      width: double.infinity,
-      padding: const EdgeInsets.all(16),
-      decoration: BoxDecoration(
-        color: Colors.black.withValues(alpha: 0.72),
-        borderRadius: BorderRadius.circular(20),
-        border: Border.all(color: Colors.white24),
-      ),
-      child: Row(
-        children: [
-          Icon(icon, color: Colors.white),
-          const SizedBox(width: 12),
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                Text(
-                  title,
-                  style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                    color: Colors.white,
-                    fontWeight: FontWeight.w700,
+  void _showHelpSheet(BuildContext context) {
+    showModalBottomSheet<void>(
+      context: context,
+      builder: (context) {
+        return SafeArea(
+          child: Padding(
+            padding: const EdgeInsets.fromLTRB(20, 8, 20, 20),
+            child: SingleChildScrollView(
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: const [
+                  Text(
+                    '¿Cómo funciona el escáner QR?',
+                    style: TextStyle(fontSize: 18, fontWeight: FontWeight.w600),
                   ),
-                ),
-                const SizedBox(height: 4),
-                Text(
-                  subtitle,
-                  style: Theme.of(
-                    context,
-                  ).textTheme.bodyMedium?.copyWith(color: Colors.white70),
-                ),
-              ],
+                ],
+              ),
             ),
           ),
-        ],
-      ),
+        );
+      },
     );
   }
 }

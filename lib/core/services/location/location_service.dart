@@ -76,11 +76,24 @@ class LocationServiceImpl extends LocationService {
         return;
       }
 
-      final headingStream = compass.watchHeading().startWith(0.0);
       const positionSettings = LocationSettings(
         accuracy: LocationAccuracy.bestForNavigation,
         distanceFilter: 1,
       );
+
+      final initialPosition = await geolocator.getCurrentPosition(
+        locationSettings: positionSettings,
+      );
+
+      yield Right<Failure, UserPosition>(
+        UserPosition(
+          latitude: initialPosition.latitude,
+          longitude: initialPosition.longitude,
+          heading: 0.0,
+        ),
+      );
+
+      final headingStream = compass.watchHeading().startWith(0.0);
 
       yield* Rx.combineLatest2<Position, double, Either<Failure, UserPosition>>(
         geolocator.getPositionStream(locationSettings: positionSettings),

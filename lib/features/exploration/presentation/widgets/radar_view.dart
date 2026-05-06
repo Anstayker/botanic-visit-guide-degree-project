@@ -67,14 +67,6 @@ class _RadarViewState extends State<RadarView>
 
               return Stack(
                 children: [
-                  Center(
-                    child: CustomPaint(
-                      size: Size.square(size * 0.85),
-                      painter: _RadarRingsPainter(
-                        ringColor: colorScheme.primary.withValues(alpha: 0.35),
-                      ),
-                    ),
-                  ),
                   if (state.isSonarActive)
                     Center(
                       child: CustomPaint(
@@ -251,10 +243,6 @@ class _HeadingConePainter extends CustomPainter {
       center.dx + math.sin(-coneHalfAngleRadians) * maxRadius,
       center.dy - math.cos(-coneHalfAngleRadians) * maxRadius,
     );
-    final outerRight = Offset(
-      center.dx + math.sin(coneHalfAngleRadians) * maxRadius,
-      center.dy - math.cos(coneHalfAngleRadians) * maxRadius,
-    );
     final innerLeft = Offset(
       center.dx + math.sin(-coneHalfAngleRadians) * innerRadius,
       center.dy - math.cos(-coneHalfAngleRadians) * innerRadius,
@@ -355,13 +343,22 @@ class _PlantMarker extends StatelessWidget {
             child: Icon(Icons.local_florist, color: color, size: 18),
           ),
           const SizedBox(height: 4),
-          Text(
-            '${plant.plant.name}'
-            '\n$distanceLabel',
-            textAlign: TextAlign.center,
-            style: Theme.of(context).textTheme.labelSmall?.copyWith(
-              color: plant.plant.isDiscovered ? Colors.white : Colors.white70,
-              fontWeight: FontWeight.w600,
+          DecoratedBox(
+            decoration: BoxDecoration(
+              color: Colors.white.withValues(alpha: 0.82),
+              borderRadius: BorderRadius.circular(10),
+            ),
+            child: Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 3),
+              child: Text(
+                '${plant.plant.name}'
+                '\n$distanceLabel',
+                textAlign: TextAlign.center,
+                style: Theme.of(context).textTheme.labelSmall?.copyWith(
+                  color: Colors.black87,
+                  fontWeight: FontWeight.w700,
+                ),
+              ),
             ),
           ),
         ],
@@ -411,50 +408,5 @@ class _SonarPainter extends CustomPainter {
     return oldDelegate.progress != progress ||
         oldDelegate.radarRadius != radarRadius ||
         oldDelegate.color != color;
-  }
-}
-
-class _RadarRingsPainter extends CustomPainter {
-  _RadarRingsPainter({required this.ringColor});
-
-  final Color ringColor;
-
-  @override
-  void paint(Canvas canvas, Size size) {
-    final center = size.center(Offset.zero);
-    final paint = Paint()
-      ..color = ringColor
-      ..style = PaintingStyle.stroke
-      ..strokeWidth = 1;
-
-    // Dibuja 4 anillos
-    for (var i = 1; i <= 4; i++) {
-      canvas.drawCircle(center, size.width * 0.18 * i, paint);
-    }
-
-    // Líneas de orientación (N-S y E-O)
-    final linePaint = Paint()
-      ..color = ringColor
-      ..style = PaintingStyle.stroke
-      ..strokeWidth = 0.5;
-
-    final maxRadius = size.width * 0.72;
-    // Línea vertical (eje N-S)
-    canvas.drawLine(
-      Offset(center.dx, center.dy - maxRadius),
-      Offset(center.dx, center.dy + maxRadius),
-      linePaint,
-    );
-    // Línea horizontal (eje E-O)
-    canvas.drawLine(
-      Offset(center.dx - maxRadius, center.dy),
-      Offset(center.dx + maxRadius, center.dy),
-      linePaint,
-    );
-  }
-
-  @override
-  bool shouldRepaint(covariant _RadarRingsPainter oldDelegate) {
-    return oldDelegate.ringColor != ringColor;
   }
 }

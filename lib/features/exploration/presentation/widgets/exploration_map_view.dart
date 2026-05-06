@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'dart:math' as math;
 
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
@@ -139,30 +140,11 @@ class _ExplorationMapViewState extends State<ExplorationMapView>
                 ],
               ),
               Positioned(
-                left: 16,
                 top: 16,
-                child: _MapBadge(icon: Icons.map_outlined, label: region.name),
-              ),
-              Positioned(
                 right: 16,
-                top: 16,
-                child: _MapBadge(
-                  icon: state.isHeadingRotationEnabled
-                      ? Icons.explore
-                      : Icons.explore_off,
-                  label: state.isHeadingRotationEnabled
-                      ? 'Rotación activa'
-                      : 'Norte fijo',
-                ),
-              ),
-              Positioned(
-                left: 16,
-                right: 16,
-                bottom: 16,
-                child: _MapFooter(
-                  title: 'Contexto espacial',
-                  subtitle:
-                      'El mapa sigue tu posición en tiempo real; las plantas se muestran solo en el radar.',
+                child: _CompassOverlay(
+                  headingDegrees: state.userPosition?.heading,
+                  isRotationEnabled: state.isHeadingRotationEnabled,
                 ),
               ),
               if (state.plants.isEmpty)
@@ -295,73 +277,85 @@ class _ExplorationMapViewState extends State<ExplorationMapView>
   }
 }
 
-class _MapBadge extends StatelessWidget {
-  const _MapBadge({required this.icon, required this.label});
+class _CompassOverlay extends StatelessWidget {
+  const _CompassOverlay({
+    required this.headingDegrees,
+    required this.isRotationEnabled,
+  });
 
-  final IconData icon;
-  final String label;
-
-  @override
-  Widget build(BuildContext context) {
-    final theme = Theme.of(context);
-
-    return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
-      decoration: BoxDecoration(
-        color: Colors.black.withValues(alpha: 0.55),
-        borderRadius: BorderRadius.circular(999),
-      ),
-      child: Row(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          Icon(icon, size: 16, color: Colors.white),
-          const SizedBox(width: 6),
-          Text(
-            label,
-            style: theme.textTheme.labelMedium?.copyWith(
-              color: Colors.white,
-              fontWeight: FontWeight.w600,
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-}
-
-class _MapFooter extends StatelessWidget {
-  const _MapFooter({required this.title, required this.subtitle});
-
-  final String title;
-  final String subtitle;
+  final double? headingDegrees;
+  final bool isRotationEnabled;
 
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
+    final colorScheme = theme.colorScheme;
+    final heading = headingDegrees ?? 0.0;
 
-    return Container(
-      padding: const EdgeInsets.all(14),
-      decoration: BoxDecoration(
-        color: Colors.black.withValues(alpha: 0.58),
-        borderRadius: BorderRadius.circular(20),
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          Text(
-            title,
-            style: theme.textTheme.titleSmall?.copyWith(
-              color: Colors.white,
-              fontWeight: FontWeight.w700,
-            ),
+    return IgnorePointer(
+      child: DecoratedBox(
+        decoration: BoxDecoration(
+          color: Colors.black.withValues(alpha: 0.52),
+          shape: BoxShape.circle,
+          border: Border.all(color: Colors.white.withValues(alpha: 0.18)),
+        ),
+        child: SizedBox(
+          width: 64,
+          height: 64,
+          child: Stack(
+            alignment: Alignment.center,
+            children: [
+              Positioned(
+                top: 5,
+                child: Text(
+                  'N',
+                  style: theme.textTheme.labelSmall?.copyWith(
+                    color: Colors.white,
+                    fontWeight: FontWeight.w800,
+                  ),
+                ),
+              ),
+              Positioned(
+                right: 6,
+                child: Text(
+                  'E',
+                  style: theme.textTheme.labelSmall?.copyWith(
+                    color: Colors.white70,
+                    fontWeight: FontWeight.w700,
+                  ),
+                ),
+              ),
+              Positioned(
+                bottom: 5,
+                child: Text(
+                  'S',
+                  style: theme.textTheme.labelSmall?.copyWith(
+                    color: Colors.white70,
+                    fontWeight: FontWeight.w700,
+                  ),
+                ),
+              ),
+              Positioned(
+                left: 6,
+                child: Text(
+                  'W',
+                  style: theme.textTheme.labelSmall?.copyWith(
+                    color: Colors.white70,
+                    fontWeight: FontWeight.w700,
+                  ),
+                ),
+              ),
+              Transform.rotate(
+                angle: -heading * math.pi / 180,
+                child: Icon(
+                  isRotationEnabled ? Icons.navigation : Icons.explore,
+                  color: colorScheme.primaryContainer,
+                  size: 28,
+                ),
+              ),
+            ],
           ),
-          const SizedBox(height: 4),
-          Text(
-            subtitle,
-            style: theme.textTheme.bodySmall?.copyWith(color: Colors.white70),
-          ),
-        ],
+        ),
       ),
     );
   }

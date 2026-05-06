@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 
+import '../../../../config/routes/app_routes.dart';
 import '../bloc/exploration_bloc.dart';
 import 'exploration_map_view.dart';
 import 'radar_view.dart';
@@ -45,57 +46,9 @@ class RadarPagePanel extends StatelessWidget {
                   const ExplorationMapView(),
                   const RadarView(),
                   Positioned(
-                    left: 12,
-                    right: 12,
-                    top: 12,
-                    child: DecoratedBox(
-                      decoration: BoxDecoration(
-                        color: Colors.black.withValues(alpha: 0.42),
-                        borderRadius: BorderRadius.circular(16),
-                      ),
-                      child: Padding(
-                        padding: const EdgeInsets.symmetric(
-                          horizontal: 10,
-                          vertical: 4,
-                        ),
-                        child: BlocBuilder<ExplorationBloc, ExplorationState>(
-                          buildWhen: (previous, current) =>
-                              previous.isHeadingRotationEnabled !=
-                              current.isHeadingRotationEnabled,
-                          builder: (context, state) {
-                            return Row(
-                              children: [
-                                const Icon(
-                                  Icons.explore,
-                                  color: Colors.white,
-                                  size: 18,
-                                ),
-                                const SizedBox(width: 8),
-                                Expanded(
-                                  child: Text(
-                                    'Rotar con brújula',
-                                    style: theme.textTheme.labelLarge?.copyWith(
-                                      color: Colors.white,
-                                      fontWeight: FontWeight.w600,
-                                    ),
-                                  ),
-                                ),
-                                Switch.adaptive(
-                                  value: state.isHeadingRotationEnabled,
-                                  onChanged: (value) {
-                                    context.read<ExplorationBloc>().add(
-                                      ExplorationRotationPreferenceToggled(
-                                        enabled: value,
-                                      ),
-                                    );
-                                  },
-                                ),
-                              ],
-                            );
-                          },
-                        ),
-                      ),
-                    ),
+                    right: 16,
+                    bottom: 16,
+                    child: _RadarFloatingActions(colorScheme: colorScheme),
                   ),
                 ],
               );
@@ -103,6 +56,59 @@ class RadarPagePanel extends StatelessWidget {
           ),
         ),
       ),
+    );
+  }
+}
+
+class _RadarFloatingActions extends StatelessWidget {
+  const _RadarFloatingActions({required this.colorScheme});
+
+  final ColorScheme colorScheme;
+
+  @override
+  Widget build(BuildContext context) {
+    return BlocBuilder<ExplorationBloc, ExplorationState>(
+      buildWhen: (previous, current) =>
+          previous.isHeadingRotationEnabled != current.isHeadingRotationEnabled,
+      builder: (context, state) {
+        final rotationIcon = state.isHeadingRotationEnabled
+            ? Icons.explore
+            : Icons.near_me_outlined;
+
+        return Padding(
+          padding: const EdgeInsets.only(right: 4, bottom: 4),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              FloatingActionButton.small(
+                heroTag: 'radar-rotation-fab',
+                backgroundColor: colorScheme.primaryContainer,
+                foregroundColor: colorScheme.onPrimaryContainer,
+                onPressed: () {
+                  context.read<ExplorationBloc>().add(
+                    ExplorationRotationPreferenceToggled(
+                      enabled: !state.isHeadingRotationEnabled,
+                    ),
+                  );
+                },
+                tooltip: 'Rotar con brújula',
+                child: Icon(rotationIcon),
+              ),
+              const SizedBox(height: 12),
+              FloatingActionButton.small(
+                heroTag: 'radar-camera-fab',
+                backgroundColor: colorScheme.secondaryContainer,
+                foregroundColor: colorScheme.onSecondaryContainer,
+                onPressed: () {
+                  Navigator.of(context).pushNamed(AppRoutes.qrScanner);
+                },
+                tooltip: 'Cámara',
+                child: const Icon(Icons.photo_camera_outlined),
+              ),
+            ],
+          ),
+        );
+      },
     );
   }
 }

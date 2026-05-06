@@ -5,7 +5,6 @@ import '../../../../config/routes/app_routes.dart';
 import '../bloc/exploration_bloc.dart';
 import 'exploration_plant_detected_dialog.dart';
 import 'radar_page_actions.dart';
-import 'radar_page_header.dart';
 import 'radar_page_panel.dart';
 
 class RadarPageBody extends StatelessWidget {
@@ -17,7 +16,24 @@ class RadarPageBody extends StatelessWidget {
     final colorScheme = theme.colorScheme;
 
     return Scaffold(
-      backgroundColor: colorScheme.surface.withValues(alpha: 0.95),
+      appBar: AppBar(
+        title: const Text(
+          'Radar Botánico',
+          style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
+        ),
+        actions: [
+          IconButton(
+            icon: const Icon(Icons.help_outline, size: 30, weight: 900),
+            onPressed: () {},
+            style: IconButton.styleFrom(
+              backgroundColor: Colors.transparent,
+              padding: const EdgeInsets.all(12),
+              minimumSize: const Size(36, 36),
+              tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+            ),
+          ),
+        ],
+      ),
       body: MultiBlocListener(
         listeners: [
           BlocListener<ExplorationBloc, ExplorationState>(
@@ -76,7 +92,6 @@ class RadarPageBody extends StatelessWidget {
         child: SafeArea(
           child: Column(
             children: const [
-              RadarPageHeader(),
               Expanded(child: RadarPagePanel()),
               RadarPageActions(),
             ],

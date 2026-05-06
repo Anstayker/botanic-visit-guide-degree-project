@@ -30,6 +30,7 @@ class ExplorationBloc extends Bloc<ExplorationEvent, ExplorationState> {
   final LocationService locationService;
   StreamSubscription? _plantSubscription;
   StreamSubscription? _positionSubscription;
+  Future<void>? _loadingTimeout;
 
   ExplorationBloc({
     required this.watchNearbyPlants,
@@ -71,6 +72,19 @@ class ExplorationBloc extends Bloc<ExplorationEvent, ExplorationState> {
   ) async {
     emit(state.copyWith(status: ExplorationStatus.loading));
 
+    // Cancel previous timeout if it exists
+    _loadingTimeout?.ignore();
+
+    // Cancel previous subscriptions if they exist
+    if (_plantSubscription != null) {
+      await _plantSubscription?.cancel();
+      _plantSubscription = null;
+    }
+    if (_positionSubscription != null) {
+      await _positionSubscription?.cancel();
+      _positionSubscription = null;
+    }
+
     final mapRegionsResult = await getExplorationMapRegions(
       core_usecase.NoParams(),
     );
@@ -94,40 +108,69 @@ class ExplorationBloc extends Bloc<ExplorationEvent, ExplorationState> {
       (bytes) => add(_MapTileCacheSizeLoaded(bytes)),
     );
 
-    await _plantSubscription?.cancel();
-    await _positionSubscription?.cancel();
+    // Set a general timeout as fallback
+    var positionEmitted = false;
+    var plantsEmitted = false;
 
-    _positionSubscription = locationService.watchUserPosition().listen((
-      result,
-    ) {
-      result.fold(
-        (failure) {
-          add(_NearbyPlantsFailed(failure.message));
-        },
-        (userPosition) {
-          add(_UserPositionUpdated(userPosition));
-        },
-      );
+    _loadingTimeout = Future.delayed(const Duration(seconds: 12), () {
+      if (!isClosed &&
+          state.status == ExplorationStatus.loading &&
+          (!positionEmitted || !plantsEmitted)) {
+        final errorMsg = !positionEmitted
+            ? 'No se pudo obtener la ubicación. Verifica que el GPS esté habilitado.'
+            : 'No se pudieron cargar las plantas cercanas.';
+        add(_NearbyPlantsFailed(errorMsg));
+      }
     });
 
-    _plantSubscription = watchNearbyPlants(stream_usecase.NoParams()).listen((
-      result,
-    ) {
-      result.fold(
-        (failure) {
-          add(_NearbyPlantsFailed(failure.message));
-        },
-        (nearbyPlants) {
-          add(_NearbyPlantsUpdated(nearbyPlants));
-        },
-      );
-    });
+    // Create position subscription
+    _positionSubscription = locationService.watchUserPosition().listen(
+      (result) {
+        positionEmitted = true;
+        result.fold(
+          (failure) {
+            add(_NearbyPlantsFailed('Error de ubicación: ${failure.message}'));
+          },
+          (userPosition) {
+            add(_UserPositionUpdated(userPosition));
+          },
+        );
+      },
+      onError: (error) {
+        add(_NearbyPlantsFailed('Error en servicio de ubicación: $error'));
+      },
+    );
+
+    // Create plants subscription
+    _plantSubscription = watchNearbyPlants(stream_usecase.NoParams()).listen(
+      (result) {
+        plantsEmitted = true;
+        result.fold(
+          (failure) {
+            add(
+              _NearbyPlantsFailed(
+                'Error al cargar plantas: ${failure.message}',
+              ),
+            );
+          },
+          (nearbyPlants) {
+            add(_NearbyPlantsUpdated(nearbyPlants));
+          },
+        );
+      },
+      onError: (error) {
+        add(_NearbyPlantsFailed('Error al cargar plantas cercanas: $error'));
+      },
+    );
   }
 
   void _onNearbyPlantsFailed(
     _NearbyPlantsFailed event,
     Emitter<ExplorationState> emit,
   ) {
+    // Cancel loading timeout since we got a response (even if it's an error)
+    _loadingTimeout?.ignore();
+
     emit(
       state.copyWith(
         status: ExplorationStatus.error,
@@ -189,6 +232,9 @@ class ExplorationBloc extends Bloc<ExplorationEvent, ExplorationState> {
     _NearbyPlantsUpdated event,
     Emitter<ExplorationState> emit,
   ) {
+    // Cancel loading timeout since we received data
+    _loadingTimeout?.ignore();
+
     emit(
       state.copyWith(
         status: ExplorationStatus.success,
@@ -307,9 +353,10 @@ class ExplorationBloc extends Bloc<ExplorationEvent, ExplorationState> {
   }
 
   @override
-  Future<void> close() {
-    _plantSubscription?.cancel();
-    _positionSubscription?.cancel();
+  Future<void> close() async {
+    _loadingTimeout?.ignore();
+    await _plantSubscription?.cancel();
+    await _positionSubscription?.cancel();
     return super.close();
   }
 }

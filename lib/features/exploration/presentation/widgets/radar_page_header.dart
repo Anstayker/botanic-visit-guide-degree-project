@@ -22,9 +22,7 @@ class RadarPageHeader extends StatelessWidget {
           const SizedBox(width: 8),
           Text(
             'Radar Botanico',
-            style: theme.textTheme.titleLarge?.copyWith(
-              fontWeight: FontWeight.w700,
-            ),
+            style: TextStyle(fontSize: 20, fontWeight: FontWeight.w600),
           ),
           const Spacer(),
           BlocBuilder<ExplorationBloc, ExplorationState>(
