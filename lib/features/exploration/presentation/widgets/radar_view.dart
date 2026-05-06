@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 
 import '../../domain/entities/exploration_plant.dart';
+import '../../../../core/entities/plant_category.dart';
 import '../bloc/exploration_bloc.dart';
 
 class RadarView extends StatefulWidget {
@@ -18,7 +19,8 @@ class _RadarViewState extends State<RadarView>
   late final AnimationController _sonarController;
   static const double _maxRadarDistance = 60;
   static const double _radarVisibleRadiusFactor = 0.56;
-  static const double _approxDistanceThresholdMeters = 9;
+  static const double _approxDistanceThresholdMeters = 30;
+
   static const double _visionConeHalfAngleDegrees = 28;
   static const double _visionConeLengthFactor = 0.96;
 
@@ -123,7 +125,6 @@ class _RadarViewState extends State<RadarView>
                       state: state,
                       center: center,
                       radarRadius: radarRadius,
-                      color: colorScheme.primary,
                     ),
                 ],
               );
@@ -139,7 +140,6 @@ class _RadarViewState extends State<RadarView>
     required ExplorationState state,
     required Offset center,
     required double radarRadius,
-    required Color color,
   }) {
     final angle =
         _plotBearingDegrees(plant: plant, state: state) * math.pi / 180;
@@ -157,8 +157,8 @@ class _RadarViewState extends State<RadarView>
       top: markerOffset.dy - 18,
       child: _PlantMarker(
         plant: plant,
-        color: color,
         distanceLabel: _distanceLabel(plant.distance),
+        discoveryThreshold: _approxDistanceThresholdMeters,
       ),
     );
   }
@@ -310,18 +310,58 @@ class _HeadingConePainter extends CustomPainter {
 class _PlantMarker extends StatelessWidget {
   const _PlantMarker({
     required this.plant,
-    required this.color,
     required this.distanceLabel,
+    required this.discoveryThreshold,
   });
 
   final ExplorationPlant plant;
-  final Color color;
   final String distanceLabel;
+  final double discoveryThreshold;
 
   @override
   Widget build(BuildContext context) {
+    // Determine icon and color based on discovery and category
+    final discovered = plant.plant.isDiscovered;
+    IconData iconData;
+    Color iconColor;
+    Color backgroundColor;
+    Color borderColor;
+
+    if (!discovered) {
+      iconData = Icons.lock;
+      iconColor = Colors.grey.shade700;
+      backgroundColor = Colors.grey.shade200.withOpacity(0.9);
+      borderColor = Colors.grey.shade400;
+    } else {
+      switch (plant.plant.categoryId) {
+        case PlantCategory.ornamental:
+          iconData = Icons.local_florist;
+          iconColor = Colors.green.shade700;
+          break;
+        case PlantCategory.frutal:
+          iconData = Icons.nature;
+          iconColor = Colors.orangeAccent.shade400;
+          break;
+        case PlantCategory.medicinal:
+          iconData = Icons.eco;
+          iconColor = Colors.indigo.shade400;
+          break;
+        case PlantCategory.other:
+          iconData = Icons.grass;
+          iconColor = Colors.brown.shade400;
+          break;
+      }
+
+      backgroundColor = iconColor.withOpacity(0.18);
+      borderColor = iconColor.withOpacity(0.9);
+    }
+
+    final withinPossibleDiscovery = plant.distance <= discoveryThreshold;
+    final showName = discovered || withinPossibleDiscovery;
+    final labelName = showName ? plant.plant.name : '¿?';
+
     return Tooltip(
-      message: '${plant.plant.name} ($distanceLabel)',
+      message: '${labelName} ($distanceLabel)',
       child: Column(
         mainAxisSize: MainAxisSize.min,
         children: [
@@ -330,28 +370,32 @@ class _PlantMarker extends StatelessWidget {
             height: 36,
             decoration: BoxDecoration(
               shape: BoxShape.circle,
-              color: plant.plant.isDiscovered
-                  ? color.withValues(alpha: 0.3)
-                  : color.withValues(alpha: 0.2),
+              color: backgroundColor,
               border: Border.all(
-                color: plant.plant.isDiscovered
-                    ? color.withValues(alpha: 0.9)
-                    : color.withValues(alpha: 0.7),
-                width: plant.plant.isDiscovered ? 1.6 : 1.0,
+                color: borderColor,
+                width: discovered ? 1.6 : 1.0,
               ),
             ),
-            child: Icon(Icons.local_florist, color: color, size: 18),
+            child: Icon(iconData, color: iconColor, size: 18),
           ),
           const SizedBox(height: 4),
           DecoratedBox(
             decoration: BoxDecoration(
-              color: Colors.white.withValues(alpha: 0.82),
+              // Hacer el fondo de la etiqueta más transparente para evitar tapar otros marcadores
+              color: Colors.white.withValues(alpha: 0.60),
               borderRadius: BorderRadius.circular(10),
+              boxShadow: [
+                BoxShadow(
+                  color: Colors.black.withOpacity(0.06),
+                  blurRadius: 4,
+                  offset: Offset(0, 1),
+                ),
+              ],
             ),
             child: Padding(
               padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 3),
               child: Text(
-                '${plant.plant.name}'
+                '$labelName'
                 '\n$distanceLabel',
                 textAlign: TextAlign.center,
                 style: Theme.of(context).textTheme.labelSmall?.copyWith(

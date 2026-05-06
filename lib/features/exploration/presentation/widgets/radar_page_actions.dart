@@ -243,19 +243,67 @@ class _NearbyPlantCard extends StatelessWidget {
               child: SizedBox(
                 width: 64,
                 height: 64,
-                child: Image.asset(
-                  plant.plant.image,
-                  fit: BoxFit.cover,
-                  errorBuilder: (_, _, _) => Container(
-                    color: colorScheme.surfaceContainerHighest,
-                    alignment: Alignment.center,
-                    child: Icon(
-                      Icons.local_florist,
-                      color: colorScheme.primary,
-                      size: 24,
-                    ),
-                  ),
-                ),
+                child: plant.plant.image.isNotEmpty
+                    ? (isDiscovered
+                          ? Image.asset(
+                              plant.plant.image,
+                              fit: BoxFit.cover,
+                              errorBuilder: (_, _, _) => Container(
+                                color: colorScheme.surfaceContainerHighest,
+                                alignment: Alignment.center,
+                                child: Icon(
+                                  Icons.local_florist,
+                                  color: colorScheme.primary,
+                                  size: 24,
+                                ),
+                              ),
+                            )
+                          : ColorFiltered(
+                              colorFilter: const ColorFilter.matrix(<double>[
+                                0.49,
+                                0.41,
+                                0.10,
+                                0,
+                                10,
+                                0.49,
+                                0.41,
+                                0.10,
+                                0,
+                                10,
+                                0.49,
+                                0.41,
+                                0.10,
+                                0,
+                                10,
+                                0,
+                                0,
+                                0,
+                                1,
+                                0,
+                              ]),
+                              child: Image.asset(
+                                plant.plant.image,
+                                fit: BoxFit.cover,
+                                errorBuilder: (_, _, _) => Container(
+                                  color: colorScheme.surfaceContainerHighest,
+                                  alignment: Alignment.center,
+                                  child: Icon(
+                                    Icons.local_florist,
+                                    color: colorScheme.primary,
+                                    size: 24,
+                                  ),
+                                ),
+                              ),
+                            ))
+                    : Container(
+                        color: colorScheme.surfaceContainerHighest,
+                        alignment: Alignment.center,
+                        child: Icon(
+                          Icons.local_florist,
+                          color: colorScheme.primary,
+                          size: 24,
+                        ),
+                      ),
               ),
             ),
             const SizedBox(width: 10),

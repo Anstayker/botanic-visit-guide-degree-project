@@ -35,41 +35,95 @@ class ExplorationPlantDetectedDialog extends StatelessWidget {
     final plant = explorationPlant.plant;
 
     return AlertDialog(
-      icon: Icon(Icons.eco, color: colorScheme.primary, size: 48),
-      title: const Text('¡Planta Detectada!'),
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+      title: Center(
+        child: Text(
+          '¡Planta descubierta!',
+          style: theme.textTheme.titleLarge?.copyWith(
+            fontWeight: FontWeight.bold,
+            color: Colors.brown.shade700,
+          ),
+        ),
+      ),
       content: Column(
         mainAxisSize: MainAxisSize.min,
-        crossAxisAlignment: CrossAxisAlignment.start,
+        crossAxisAlignment: CrossAxisAlignment.center,
         children: [
+          // Plant image
+          if (plant.image.isNotEmpty)
+            ClipRRect(
+              borderRadius: BorderRadius.circular(12),
+              child: Image.asset(
+                plant.image,
+                width: 180,
+                height: 120,
+                fit: BoxFit.cover,
+                errorBuilder: (_, __, ___) => Container(
+                  width: 180,
+                  height: 120,
+                  color: colorScheme.surfaceContainerHighest,
+                  alignment: Alignment.center,
+                  child: Icon(
+                    Icons.local_florist,
+                    size: 48,
+                    color: colorScheme.primary,
+                  ),
+                ),
+              ),
+            )
+          else
+            Container(
+              width: 180,
+              height: 120,
+              decoration: BoxDecoration(
+                color: colorScheme.surfaceContainerHighest,
+                borderRadius: BorderRadius.circular(12),
+              ),
+              alignment: Alignment.center,
+              child: Icon(
+                Icons.local_florist,
+                size: 48,
+                color: colorScheme.primary,
+              ),
+            ),
+          const SizedBox(height: 8),
           Text(
             plant.name,
-            style: theme.textTheme.titleLarge?.copyWith(
-              fontWeight: FontWeight.bold,
-              color: colorScheme.primary,
+            textAlign: TextAlign.center,
+            style: theme.textTheme.titleMedium?.copyWith(
+              fontWeight: FontWeight.w800,
             ),
-          ),
-          const SizedBox(height: 12),
-          _InfoRow(
-            icon: Icons.straighten,
-            label: 'Distancia',
-            value: _distanceLabel(explorationPlant.distance),
-          ),
-          const SizedBox(height: 8),
-          _InfoRow(
-            icon: Icons.explore,
-            label: 'Dirección',
-            value: _bearingToDirection(explorationPlant.bearing),
           ),
           if (plant.scientificName.isNotEmpty) ...[
-            const SizedBox(height: 8),
-            _InfoRow(
-              icon: Icons.science,
-              label: 'Nombre científico',
-              value: plant.scientificName,
+            const SizedBox(height: 6),
+            Text(
+              plant.scientificName,
+              textAlign: TextAlign.center,
+              style: theme.textTheme.bodySmall?.copyWith(
+                color: colorScheme.onSurfaceVariant,
+                fontStyle: FontStyle.italic,
+              ),
             ),
           ],
+          const SizedBox(height: 4),
+          // compact info rows
+          Row(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              _CompactInfo(
+                icon: Icons.straighten,
+                label: _distanceLabel(explorationPlant.distance),
+              ),
+              const SizedBox(width: 12),
+              _CompactInfo(
+                icon: Icons.explore,
+                label: _bearingToDirection(explorationPlant.bearing),
+              ),
+            ],
+          ),
         ],
       ),
+      actionsPadding: const EdgeInsets.fromLTRB(16, 4, 16, 12),
       actions: [
         SizedBox(
           width: double.infinity,
@@ -78,18 +132,44 @@ class ExplorationPlantDetectedDialog extends StatelessWidget {
               Expanded(
                 child: TextButton(
                   onPressed: () => Navigator.of(context).pop(),
+                  style: TextButton.styleFrom(
+                    foregroundColor: colorScheme.onSurface,
+                    minimumSize: const Size.fromHeight(44),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(10),
+                    ),
+                  ),
                   child: const Text('Seguir explorando'),
                 ),
               ),
-              const SizedBox(width: 8),
+              const SizedBox(width: 10),
               Expanded(
-                child: FilledButton.icon(
+                child: ElevatedButton(
                   onPressed: () {
                     Navigator.of(context).pop();
                     onViewDetails();
                   },
-                  icon: const Icon(Icons.menu_book),
-                  label: const Text('Ver detalles'),
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: colorScheme.primary,
+                    foregroundColor: colorScheme.onPrimary,
+                    minimumSize: const Size.fromHeight(44),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(10),
+                    ),
+                    elevation: 2,
+                  ),
+                  child: FittedBox(
+                    fit: BoxFit.scaleDown,
+                    child: Row(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      mainAxisSize: MainAxisSize.min,
+                      children: const [
+                        Icon(Icons.menu_book_outlined),
+                        SizedBox(width: 10),
+                        Text('Ver detalles'),
+                      ],
+                    ),
+                  ),
                 ),
               ),
             ],
@@ -123,36 +203,23 @@ class ExplorationPlantDetectedDialog extends StatelessWidget {
   }
 }
 
-class _InfoRow extends StatelessWidget {
-  const _InfoRow({
-    required this.icon,
-    required this.label,
-    required this.value,
-  });
+class _CompactInfo extends StatelessWidget {
+  const _CompactInfo({required this.icon, required this.label});
 
   final IconData icon;
   final String label;
-  final String value;
 
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
-
     return Row(
       children: [
-        Icon(icon, size: 20, color: Colors.black54),
-        const SizedBox(width: 8),
+        Icon(icon, size: 18, color: theme.colorScheme.onSurfaceVariant),
+        const SizedBox(width: 6),
         Text(
-          '$label: ',
-          style: theme.textTheme.bodyMedium?.copyWith(
-            fontWeight: FontWeight.w500,
-          ),
-        ),
-        Expanded(
-          child: Text(
-            value,
-            style: theme.textTheme.bodyMedium,
-            overflow: TextOverflow.ellipsis,
+          label,
+          style: theme.textTheme.bodySmall?.copyWith(
+            fontWeight: FontWeight.w600,
           ),
         ),
       ],
