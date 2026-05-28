@@ -1,6 +1,12 @@
 import 'package:bloc/bloc.dart';
 import 'package:equatable/equatable.dart';
 
+import '../../../../core/entities/plant.dart';
+import '../../../plant_details/domain/usecases/get_plant_details_data.dart'
+    show GetPlantDetailsData;
+import '../../../plant_details/domain/usecases/get_plant_details_data.dart'
+    as plant_details_params
+    show Params;
 import '../../../plant_progress/domain/usecases/discover_plant.dart'
     as plant_progress;
 import '../../domain/usecases/validate_qr_code.dart';
@@ -10,9 +16,13 @@ part 'qr_scanner_state.dart';
 class QRScannerCubit extends Cubit<QrScannerState> {
   final ValidateQrCode validateQrCode;
   final plant_progress.DiscoverPlant discoverPlant;
+  final GetPlantDetailsData getPlantDetailsData;
 
-  QRScannerCubit({required this.validateQrCode, required this.discoverPlant})
-    : super(const QrScannerState());
+  QRScannerCubit({
+    required this.validateQrCode,
+    required this.discoverPlant,
+    required this.getPlantDetailsData,
+  }) : super(const QrScannerState());
 
   Future<void> reset() async {
     emit(const QrScannerState());
@@ -61,14 +71,31 @@ class QRScannerCubit extends Cubit<QrScannerState> {
           isProcessing: false,
         ),
       ),
-      (_) => emit(
-        state.copyWith(
-          status: QrScannerStatus.success,
-          message: 'Planta desbloqueada correctamente.',
-          discoveredPlantId: plantId,
-          isProcessing: false,
-        ),
-      ),
+      (_) async {
+        // Fetch plant details after successful discovery
+        final plantDetailsResult = await getPlantDetailsData(
+          plant_details_params.Params(id: plantId),
+        );
+
+        plantDetailsResult.fold(
+          (failure) => emit(
+            state.copyWith(
+              status: QrScannerStatus.error,
+              message: failure.message,
+              isProcessing: false,
+            ),
+          ),
+          (plant) => emit(
+            state.copyWith(
+              status: QrScannerStatus.success,
+              message: 'Planta desbloqueada correctamente.',
+              discoveredPlantId: plantId,
+              discoveredPlant: plant,
+              isProcessing: false,
+            ),
+          ),
+        );
+      },
     );
   }
 

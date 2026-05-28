@@ -1,30 +1,27 @@
 import 'package:flutter/material.dart';
 
-import '../../domain/entities/exploration_plant.dart';
+import '../../../../core/entities/plant.dart';
 
-class ExplorationPlantDetectedDialog extends StatelessWidget {
-  static const double _approxDistanceThresholdMeters = 9;
-
-  const ExplorationPlantDetectedDialog({
+class QrPlantDiscoveredDialog extends StatelessWidget {
+  const QrPlantDiscoveredDialog({
     super.key,
-    required this.explorationPlant,
+    required this.plant,
     required this.onViewDetails,
   });
 
-  final ExplorationPlant explorationPlant;
+  final Plant plant;
   final VoidCallback onViewDetails;
 
   static Future<void> show(
     BuildContext context,
-    ExplorationPlant explorationPlant, {
+    Plant plant, {
     required VoidCallback onViewDetails,
   }) {
     return showDialog<void>(
       context: context,
-      builder: (dialogContext) => ExplorationPlantDetectedDialog(
-        explorationPlant: explorationPlant,
-        onViewDetails: onViewDetails,
-      ),
+      barrierDismissible: false,
+      builder: (dialogContext) =>
+          QrPlantDiscoveredDialog(plant: plant, onViewDetails: onViewDetails),
     );
   }
 
@@ -32,16 +29,15 @@ class ExplorationPlantDetectedDialog extends StatelessWidget {
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
     final colorScheme = theme.colorScheme;
-    final plant = explorationPlant.plant;
 
     return AlertDialog(
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
       title: Center(
         child: Text(
-          '¡Planta descubierta!',
+          '¡Planta desbloqueada!',
           style: theme.textTheme.titleLarge?.copyWith(
             fontWeight: FontWeight.bold,
-            color: Colors.brown.shade700,
+            color: Colors.green.shade700,
           ),
         ),
       ),
@@ -86,7 +82,8 @@ class ExplorationPlantDetectedDialog extends StatelessWidget {
                 color: colorScheme.primary,
               ),
             ),
-          const SizedBox(height: 8),
+          const SizedBox(height: 12),
+          // Plant name
           Text(
             plant.name,
             textAlign: TextAlign.center,
@@ -94,6 +91,7 @@ class ExplorationPlantDetectedDialog extends StatelessWidget {
               fontWeight: FontWeight.w800,
             ),
           ),
+          // Scientific name
           if (plant.scientificName.isNotEmpty) ...[
             const SizedBox(height: 6),
             Text(
@@ -105,22 +103,26 @@ class ExplorationPlantDetectedDialog extends StatelessWidget {
               ),
             ),
           ],
-          const SizedBox(height: 4),
-          // compact info rows
-          Row(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              _CompactInfo(
-                icon: Icons.straighten,
-                label: _distanceLabel(explorationPlant.distance),
+          // Description preview (first 100 chars)
+          if (plant.description.isNotEmpty) ...[
+            const SizedBox(height: 12),
+            Container(
+              padding: const EdgeInsets.all(12),
+              decoration: BoxDecoration(
+                color: colorScheme.surfaceContainerLow,
+                borderRadius: BorderRadius.circular(8),
               ),
-              const SizedBox(width: 12),
-              _CompactInfo(
-                icon: Icons.explore,
-                label: _bearingToDirection(explorationPlant.bearing),
+              child: Text(
+                plant.description.length > 100
+                    ? '${plant.description.substring(0, 100)}...'
+                    : plant.description,
+                textAlign: TextAlign.center,
+                style: theme.textTheme.bodySmall?.copyWith(
+                  color: colorScheme.onSurface,
+                ),
               ),
-            ],
-          ),
+            ),
+          ],
         ],
       ),
       actionsPadding: const EdgeInsets.fromLTRB(16, 4, 16, 12),
@@ -139,7 +141,7 @@ class ExplorationPlantDetectedDialog extends StatelessWidget {
                       borderRadius: BorderRadius.circular(10),
                     ),
                   ),
-                  child: const Text('Seguir explorando'),
+                  child: const Text('Seguir escaneando'),
                 ),
               ),
               const SizedBox(width: 10),
@@ -173,53 +175,6 @@ class ExplorationPlantDetectedDialog extends StatelessWidget {
                 ),
               ),
             ],
-          ),
-        ),
-      ],
-    );
-  }
-
-  String _bearingToDirection(double bearing) {
-    const directions = [
-      'Norte',
-      'Noreste',
-      'Este',
-      'Sureste',
-      'Sur',
-      'Suroeste',
-      'Oeste',
-      'Noroeste',
-    ];
-    final index = ((bearing + 22.5) % 360 / 45).floor();
-    return directions[index];
-  }
-
-  String _distanceLabel(double distanceMeters) {
-    final rounded = distanceMeters.toStringAsFixed(0);
-    if (distanceMeters <= _approxDistanceThresholdMeters) {
-      return '~${rounded}m';
-    }
-    return '${rounded}m';
-  }
-}
-
-class _CompactInfo extends StatelessWidget {
-  const _CompactInfo({required this.icon, required this.label});
-
-  final IconData icon;
-  final String label;
-
-  @override
-  Widget build(BuildContext context) {
-    final theme = Theme.of(context);
-    return Row(
-      children: [
-        Icon(icon, size: 18, color: theme.colorScheme.onSurfaceVariant),
-        const SizedBox(width: 6),
-        Text(
-          label,
-          style: theme.textTheme.bodySmall?.copyWith(
-            fontWeight: FontWeight.w600,
           ),
         ),
       ],

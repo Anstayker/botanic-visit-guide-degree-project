@@ -7,6 +7,7 @@ class QrScannerState extends Equatable {
   final String? message;
   final String? scannedValue;
   final String? discoveredPlantId;
+  final Plant? discoveredPlant;
   final bool isProcessing;
 
   const QrScannerState({
@@ -14,6 +15,7 @@ class QrScannerState extends Equatable {
     this.message,
     this.scannedValue,
     this.discoveredPlantId,
+    this.discoveredPlant,
     this.isProcessing = false,
   });
 
@@ -22,6 +24,7 @@ class QrScannerState extends Equatable {
     String? message,
     String? scannedValue,
     String? discoveredPlantId,
+    Plant? discoveredPlant,
     bool? isProcessing,
   }) {
     return QrScannerState(
@@ -29,6 +32,7 @@ class QrScannerState extends Equatable {
       message: message,
       scannedValue: scannedValue ?? this.scannedValue,
       discoveredPlantId: discoveredPlantId ?? this.discoveredPlantId,
+      discoveredPlant: discoveredPlant ?? this.discoveredPlant,
       isProcessing: isProcessing ?? this.isProcessing,
     );
   }
@@ -39,6 +43,7 @@ class QrScannerState extends Equatable {
     message,
     scannedValue,
     discoveredPlantId,
+    discoveredPlant,
     isProcessing,
   ];
 }

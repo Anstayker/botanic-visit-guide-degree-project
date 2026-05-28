@@ -3,8 +3,11 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:mobile_scanner/mobile_scanner.dart';
 
 import '../../../../injection_container.dart';
+import '../../../plant_details/domain/usecases/get_plant_details_data.dart';
 import '../cubit/qr_scanner_cubit.dart';
 import '../widgets/camera_view.dart';
+import '../widgets/qr_error_dialog.dart';
+import '../widgets/qr_plant_discovered_dialog.dart';
 import '../widgets/scanner_overlay.dart';
 import '../widgets/controls_panel.dart';
 
@@ -36,24 +39,21 @@ class _QRScannerState extends State<QRScanner> {
   @override
   Widget build(BuildContext context) {
     return BlocProvider(
-      create: (_) => QRScannerCubit(validateQrCode: sl(), discoverPlant: sl()),
+      create: (_) => QRScannerCubit(
+        validateQrCode: sl(),
+        discoverPlant: sl(),
+        getPlantDetailsData: sl<GetPlantDetailsData>(),
+      ),
       child: BlocListener<QRScannerCubit, QrScannerState>(
         listenWhen: (previous, current) => previous.status != current.status,
-        listener: (context, state) async {
-          if (state.status == QrScannerStatus.success) {
-            await _cameraController.stop();
-            if (!context.mounted) {
-              return;
-            }
-            ScaffoldMessenger.of(context).showSnackBar(
-              SnackBar(content: Text(state.message ?? 'Planta desbloqueada.')),
-            );
+        listener: (context, state) {
+          if (state.status == QrScannerStatus.success &&
+              state.discoveredPlant != null) {
+            _handlePlantDiscovered(context, state);
           }
 
           if (state.status == QrScannerStatus.error && state.message != null) {
-            ScaffoldMessenger.of(
-              context,
-            ).showSnackBar(SnackBar(content: Text(state.message!)));
+            _handleQrError(context, state);
           }
         },
         child: Scaffold(
@@ -114,6 +114,50 @@ class _QRScannerState extends State<QRScanner> {
             ),
           ),
         );
+      },
+    );
+  }
+
+  Future<void> _handlePlantDiscovered(
+    BuildContext context,
+    QrScannerState state,
+  ) async {
+    await _cameraController.stop();
+    if (!context.mounted) {
+      return;
+    }
+
+    await QrPlantDiscoveredDialog.show(
+      context,
+      state.discoveredPlant!,
+      onViewDetails: () {
+        if (context.mounted) {
+          Navigator.of(
+            context,
+          ).pushNamed('/plant-details', arguments: state.discoveredPlantId);
+        }
+      },
+    );
+
+    if (context.mounted) {
+      await _cameraController.start();
+    }
+  }
+
+  Future<void> _handleQrError(
+    BuildContext context,
+    QrScannerState state,
+  ) async {
+    final cubit = context.read<QRScannerCubit>();
+
+    await QrErrorDialog.show(
+      context,
+      state.message!,
+      onRetry: () async {
+        if (context.mounted) {
+          await cubit.reset();
+          await _cameraController.start();
+        }
       },
     );
   }

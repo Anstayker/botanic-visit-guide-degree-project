@@ -31,7 +31,7 @@ class ControlsPanel extends StatelessWidget {
                 else if (isSuccess)
                   StatusBanner(
                     icon: Icons.verified,
-                    title: 'Planta desbloqueada',
+                    title: 'Planta descubierta',
                     subtitle: state.message ?? '',
                   )
                 else
@@ -39,10 +39,10 @@ class ControlsPanel extends StatelessWidget {
                     icon: Icons.qr_code_scanner,
                     title: 'Apunta al QR',
                     subtitle:
-                        'Coloca el codigo dentro del marco para desbloquear la planta.',
+                        'Coloca el QR dentro del marco para descubrir una planta.',
                   ),
-                const SizedBox(height: 12),
-                if (isSuccess)
+                if (isSuccess) ...[
+                  const SizedBox(height: 12),
                   FilledButton.icon(
                     onPressed: () async {
                       await context.read<QRScannerCubit>().reset();
@@ -50,15 +50,8 @@ class ControlsPanel extends StatelessWidget {
                     },
                     icon: const Icon(Icons.refresh),
                     label: const Text('Escanear otro QR'),
-                  )
-                else
-                  FilledButton.icon(
-                    onPressed: () async {
-                      await controller.start();
-                    },
-                    icon: const Icon(Icons.camera_alt_outlined),
-                    label: const Text('Reanudar camara'),
                   ),
+                ],
               ],
             );
           },

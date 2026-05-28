@@ -43,6 +43,9 @@ import 'features/plant_progress/domain/repositories/plant_progress_repository.da
 import 'features/plant_progress/domain/usecases/discover_plant.dart';
 import 'features/plant_progress/domain/usecases/set_all_plants_discovered.dart';
 import 'features/plant_progress/domain/usecases/watch_user_progress.dart';
+import 'features/qr_scanner/data/datasources/qr_scanner_local_datasource.dart';
+import 'features/qr_scanner/data/repositories/qr_scanner_repository_impl.dart';
+import 'features/qr_scanner/domain/repositories/qr_scanner_repository.dart';
 import 'features/qr_scanner/domain/usecases/validate_qr_code.dart';
 import 'firebase_options.dart';
 
@@ -190,8 +193,22 @@ Future<void> init() async {
   );
 
   //! Feature - QR Scanner
+  // Data sources
+  sl.registerLazySingleton<QrScannerLocalDatasource>(
+    () => QrScannerLocalDatasourceImpl(),
+  );
+
+  // Repositories
+  sl.registerLazySingleton<QrScannerRepository>(
+    () => QrScannerRepositoryImpl(
+      localDatasource: sl<QrScannerLocalDatasource>(),
+      plantDetailsRepository: sl<PlantDetailsRepository>(),
+    ),
+  );
+
+  // Use cases
   sl.registerLazySingleton<ValidateQrCode>(
-    () => ValidateQrCode(repository: sl<PlantDetailsRepository>()),
+    () => ValidateQrCode(repository: sl<QrScannerRepository>()),
   );
 
   //! External
